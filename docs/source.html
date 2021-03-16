@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<head><meta charset="utf-8" /><meta content="width=device-width" name="viewport" /><meta content="The Clojure implementation of my static site generator which created this page." name="description" /><title>Source code &mdash; samcf.me</title><style>/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+</style><style>.root {
+    box-sizing: border-box;
+    color: #333;
+    font-family: monospace;
+    line-height: 1.5;
+    margin: 0 auto;
+    max-width: 640px;
+    padding: 0 16px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    margin: 16px 0;
+}
+
+.about {
+    margin-bottom: 1rem;
+}
+</style><style>.markdown ul,
+.markdown ol,
+.markdown table,
+.markdown p,
+.markdown pre {
+    margin-bottom: 1rem;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+    text-transform: uppercase;
+}
+
+.markdown code { font-family: monospace; }
+.markdown h1 { font-size: 22px; }
+.markdown h2 { font-size: 18px; }
+.markdown h3 { font-size: 16px; }
+
+.markdown pre code {
+    background-color: #f9f9f9;
+    border-radius: 3px;
+    border: 1px solid #e6e6e6;
+    font-size: 12px;
+    display: block;
+    /* padding: 12px 16px; */
+}
+
+.markdown p code {
+    background-color: #f2f2f2;
+    border-radius: 2px;
+    font-weight: bold;
+    padding: 0 4px;
+}
+
+.markdown ol { list-style-type: decimal-leading-zero; }
+.markdown ul { list-style-type: disc; }
+.markdown li { margin-left: 1.6rem; }
+.markdown li + li { margin-top: 4px; }
+
+.markdown table {
+    width: 100%;
+}
+
+.markdown th {
+    font-weight: bold;
+}
+
+.markdown table td,
+.markdown table th {
+    border: 1px solid #ddd;
+    padding: 4px 8px;
+}
+
+.markdown em {
+    font-style: italic;
+}
+</style></head><body><div class="root"><header><a href="/" title="Navigate to the home page">samcf.me</a><a href="//github.com/samcf" target="_blank" title="Check out my projects on Github">github.com/samcf</a><a href="mailto:mail@samcf.me" title="Send me an email">mailto:mail@samcf.me</a><a href="source.html" title="Navigate to this project&apos;s source code">source.html</a><address>denver, co</address></header><div class="markdown"><h2>Source Code</h2><p>The following Clojure is responsible for generating the content on this site. The content is primarily driven by the public gists on <a href="//gist.github.com/samcf" target="_blank" title="Public gists of Sam Ferrell">gist.github.com/samcf</a>. The project itself is hosted here <a href="//github.com/samcf/samcf.github.io" target="_blank" title="Navigate to the project repo">github.com/samcf/samcf.github.io</a>.</p><pre><code>(ns samcf.docs
+  (:require [clj-http.client :as client]
+            [clojure.core.async :as async]
+            [clojure.string :as string]
+            [hiccup.core :as hiccup]
+            [hiccup.page :as page]
+            [markdown.core :as markdown]))
+
+(def pages
+  #{&quot;docs/index.html&quot;
+    &quot;docs/posts/%s.html&quot;
+    &quot;docs/source.html&quot;})
+
+(defn gists [username]
+  (-&gt; (format &quot;https://api.github.com/users/%s/gists&quot; username)
+      (client/get {:as :json})
+      (:body)))
+
+(defn fetch [&amp; entries]
+  (-&gt;&gt; entries
+       (mapv
+        (fn [post] (async/go [post (-&gt; post :url client/get :body)])))
+       (async/merge)
+       (async/reduce
+        (fn [m v]
+          (let [[p c] v]
+            (update m (:type p) conj v))) {})
+       (async/&lt;!!)))
+
+(def gist-&gt;entry
+  (comp (map (fn [data] [data (-&gt; data :files vals first)]))
+        (filter (fn [[data file]] (not (nil? file))))
+        (filter (fn [[data file]] (string/includes? (:filename file) &quot;.site.&quot;)))
+        (map (fn [[data file]]
+               (let [[name _ type ext] (string/split (:filename file) #&quot;\.&quot;)]
+                 {:name    name
+                  :type    (keyword type)
+                  :desc    (:description data)
+                  :created (:created_at data)
+                  :updated (:updated_at data)
+                  :url     (:raw_url file)
+                  :ext     ext})))))
+
+(defn link-to [url &amp; {:keys [text title external]}]
+  [:a {:href url
+       :title title
+       :target (when external &quot;_blank&quot;)}
+   (or text url)])
+
+(defn format-date [s]
+  (-&gt;&gt; (java.time.Instant/parse s)
+       (java.util.Date/from)
+       (.format (java.text.SimpleDateFormat. &quot;MMM d, yyyy&quot;))))
+
+(defn layout [content &amp; {:keys [title desc]}]
+  (hiccup/html
+   (page/doctype :html5)
+   [:head
+    [:meta {:charset &quot;utf-8&quot;}]
+    [:meta {:name &quot;viewport&quot; :content &quot;width=device-width&quot;}]
+    [:meta {:name &quot;description&quot; :content desc}]
+    [:title title &quot; &amp;mdash; &quot; &quot;samcf.me&quot;]
+    (for [name #{&quot;reset&quot; &quot;style&quot; &quot;markdown&quot;}]
+      [:style (slurp (format &quot;docs/assets/%s.css&quot; name))])]
+   [:body
+    [:div.root
+     [:header
+      (link-to &quot;/&quot; :text &quot;samcf.me&quot; :title &quot;Navigate to the home page&quot;)
+      (link-to
+       &quot;//github.com/samcf&quot;
+       :text &quot;github.com/samcf&quot;
+       :title &quot;Check out my projects on Github&quot;
+       :external true)
+      (link-to &quot;mailto:mail@samcf.me&quot; :title &quot;Send me an email&quot;)
+      (link-to &quot;source.html&quot; :title &quot;Navigate to this project&apos;s source code&quot;)
+      [:address &quot;denver, co&quot;]]
+     content]]))
+
+(defmulti render (fn [filename _] filename))
+
+(defmethod render &quot;docs/index.html&quot; [filename gists]
+  [[filename
+    (layout
+     [:div
+      [:div.about.markdown
+       (let [[[_ content]] (:about gists)]
+         (markdown/md-to-html-string content))]
+      [:div.posts.markdown
+       [:h1 &quot;Posts&quot;]
+       (for [[post _] (:post gists)]
+         [:div
+          (format-date (:created post)) &quot; &quot;
+          (link-to (format &quot;/posts/%s.html&quot; (:name post)) :text (:desc post))])]]
+     :title &quot;Home&quot;
+     :desc (str &quot;Software engineer specializing in user interfaces, browser&quot;
+                &quot; applications, relational data modeling, and board game&quot;
+                &quot; programming.&quot;))]])
+
+(defmethod render &quot;docs/posts/%s.html&quot; [filename gists]
+  (for [[post content] (:post gists)]
+    [(format filename (:name post))
+     (layout
+      [:div.markdown
+       [:p (format-date (:created post))]
+       (markdown/md-to-html-string content)]
+      :title (:desc post)
+      :desc (:desc post))]))
+
+(defmethod render &quot;docs/source.html&quot; [filename _]
+  [[filename
+    (layout
+     [:div.markdown
+      [:h2 &quot;Source Code&quot;]
+      [:p (str &quot;The following Clojure is responsible for generating the content&quot;
+               &quot; on this site. The content is primarily driven by the public&quot;
+               &quot; gists on &quot;)
+       (link-to
+        &quot;//gist.github.com/samcf&quot;
+        :text &quot;gist.github.com/samcf&quot;
+        :title &quot;Public gists of Sam Ferrell&quot;
+        :external true)
+       &quot;. The project itself is hosted here &quot;
+       (link-to
+        &quot;//github.com/samcf/samcf.github.io&quot;
+        :text &quot;github.com/samcf/samcf.github.io&quot;
+        :title &quot;Navigate to the project repo&quot;
+        :external true)
+       &quot;.&quot;]
+      [:pre [:code (hiccup.util/escape-html (slurp &quot;src/samcf/docs.clj&quot;))]]]
+     :title &quot;Source code&quot;
+     :desc (str &quot;The Clojure implementation of my static site generator which&quot;
+                &quot; created this page.&quot;))]])
+
+(defn -main []
+  (let [gists (-&gt;&gt; (gists &quot;samcf&quot;) (into [] gist-&gt;entry) (apply fetch))
+        files (-&gt;&gt; pages (mapcat #(render % gists)))]
+    (doseq [[filename content] files]
+      (spit filename content))))
+</code></pre></div></div></body>

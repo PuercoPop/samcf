@@ -1,0 +1,7 @@
+{:paths   ["src"]
+ :deps    {org.clojure/core.async    {:mvn/version "1.3.610"}
+           hiccup/hiccup             {:mvn/version "1.0.5"}
+           markdown-clj/markdown-clj {:mvn/version "1.10.5"}
+           clj-http/clj-http         {:mvn/version "3.12.0"}
+           cheshire/cheshire         {:mvn/version "5.10.0"}}
+ :aliases {:publish {:main-opts ["-m" "samcf.docs"]}}}

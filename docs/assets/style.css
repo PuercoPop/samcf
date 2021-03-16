@@ -1,0 +1,19 @@
+.root {
+    box-sizing: border-box;
+    color: #333;
+    font-family: monospace;
+    line-height: 1.5;
+    margin: 0 auto;
+    max-width: 640px;
+    padding: 0 16px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    margin: 16px 0;
+}
+
+.about {
+    margin-bottom: 1rem;
+}

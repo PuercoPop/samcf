@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<head><meta charset="utf-8" /><meta content="width=device-width" name="viewport" /><meta content="Designing Highly Customizable Forms" name="description" /><title>Designing Highly Customizable Forms &mdash; samcf.me</title><style>/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+</style><style>.root {
+    box-sizing: border-box;
+    color: #333;
+    font-family: monospace;
+    line-height: 1.5;
+    margin: 0 auto;
+    max-width: 640px;
+    padding: 0 16px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    margin: 16px 0;
+}
+
+.about {
+    margin-bottom: 1rem;
+}
+</style><style>.markdown ul,
+.markdown ol,
+.markdown table,
+.markdown p,
+.markdown pre {
+    margin-bottom: 1rem;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+    text-transform: uppercase;
+}
+
+.markdown code { font-family: monospace; }
+.markdown h1 { font-size: 22px; }
+.markdown h2 { font-size: 18px; }
+.markdown h3 { font-size: 16px; }
+
+.markdown pre code {
+    background-color: #f9f9f9;
+    border-radius: 3px;
+    border: 1px solid #e6e6e6;
+    font-size: 12px;
+    display: block;
+    /* padding: 12px 16px; */
+}
+
+.markdown p code {
+    background-color: #f2f2f2;
+    border-radius: 2px;
+    font-weight: bold;
+    padding: 0 4px;
+}
+
+.markdown ol { list-style-type: decimal-leading-zero; }
+.markdown ul { list-style-type: disc; }
+.markdown li { margin-left: 1.6rem; }
+.markdown li + li { margin-top: 4px; }
+
+.markdown table {
+    width: 100%;
+}
+
+.markdown th {
+    font-weight: bold;
+}
+
+.markdown table td,
+.markdown table th {
+    border: 1px solid #ddd;
+    padding: 4px 8px;
+}
+
+.markdown em {
+    font-style: italic;
+}
+</style></head><body><div class="root"><header><a href="/" title="Navigate to the home page">samcf.me</a><a href="//github.com/samcf" target="_blank" title="Check out my projects on Github">github.com/samcf</a><a href="mailto:mail@samcf.me" title="Send me an email">mailto:mail@samcf.me</a><a href="source.html" title="Navigate to this project&apos;s source code">source.html</a><address>denver, co</address></header><div class="markdown"><p>Feb 18, 2021</p><h1>Designing Highly Customizable Forms</h1><p>This is an experience report for designing and implementing a customizable form system for our service which allowed us to provide highly dynamic forms to our customers. First I'll explain the business problem and the previous design (and its inadequacies) then enumerate the required features that a new design must support. I'll cover the high level details of the new design across every part of the stack: the database, server, API, and frontend. You'll see how we approached a green field project and what kind of development process we used when iterating. Finally, we'll consider the trade-offs and limitations of such a design.</p><p>This is not intended to be a blueprint of how you should design your own forms; this is a retrospective of our design choices and at best may inspire deeper discussion.</p><h1>Understanding the Problem</h1><p>Our service provides housing properties with the tools to manage their affordable housing applicants. Applicants apply for affordable housing through our service by filling out a digital form on their browser.</p><p>There is no standard application form; they are as varied as the properties and applicants and change dramatically from state to state and city to city. Funding sources for properties may require affordable housing applicants to answer very specific form questions in order for the property to receive state or city tax credits to help cover construction costs. These funding sources also dictate the rules for qualification for those properties since they may be looking to promote certain kinds of needs-based housing in their area for political, economic, or social reasons.</p><h1>Shortcomings of the Previous Design</h1><p>To understand the need for a new design its necessary to see the shortcomings of our previous solution.</p><p>To customize the application form for a particular property, <strong>we described in code</strong> which questions should appear on the form and in which sections. These changes were committed, merged, and then deployed to affect that change. There are several disadvantages to this approach.</p><ul><li>Code is much riskier to change quickly than, for example, data in a database.</li><li>The time required to affect such changes is substantial.</li><li>It is much harder to perform introspection on this code-as-data.</li></ul><p>The current design also did not offer the kind of highly nuanced customization that we need. For example, changing the label to a question was impossible without changing it for everyone.</p><p>Another issue was with how we persisted answers to the form in a relational database.</p><p>The previous design used a single table with a column for every possible question. This resulted in a table with a large number of columns (around 980). Additionally, most of these columns were intended for the same question but for different members of the applicant's household. For example <code>household&#95;member&#95;3&#95;first&#95;name</code> to represent the first name for the third household member. These repeated questions accounted for about 2/3 of the total number of columns.</p><p>There are several disadvantages with this approach.</p><ul><li>Most relational databases have inherent limits on the size of a single row. It's possible that expanding the scope of this table would have caused the database to simply reject those changes.</li><li>Most rows are very sparsely populated resulting in lots of wasted storage space.</li><li>Creating objects from such a row using an ORM would basically guarantee out of memory exceptions.</li><li>Adding new questions requires writing migrations. Even worse, it requires adding those columns by name to every place in the application where that column needs to be consumed.</li></ul><p>However this design is not without advantages, as well.</p><ul><li>Every column has an enforced type.</li><li>Writing queries using column names is very familiar.</li></ul><p>Ultimately the problem comes down to a simple interaction between engineering and product: we cannot extend the form to support the questions or customizations that a potential customer wants without considerable time and effort.</p><h1>Requirements for a New Design</h1><p>Now that we've acknowledged a limitation in our product, its time to enumerate all the things we want out of a new solution.</p><p><strong>Supporting new questions should be very easy</strong> and require very little engineering effort. We want to be able to approach customers with a list of the questions that we already support while also being able to say <strong>yes</strong> when customers have more questions they need to ask on their forms.</p><p><strong>Implementing and maintaining form customizations should be easy and safe</strong>. Regular humans, with some training, should be able to quickly configure and customize the forms new customers need during onboarding. We should be able to double check our work for accuracy before those changes go live.</p><p><strong>Usability and accessibility of the form is paramount</strong> for housing applicants who may have visual impairments or lack computer literacy. Supporting older devices and browsers is also important.</p><p><strong>Forms and questions should support the following features</strong>.</p><ul><li>Rich variety of different kinds of questions, such as date ranges, address forms, select one or many options, phone numbers, monetary amounts, and upload controls.</li><li>Implementing new kinds of questions should be proportional to the ask.</li><li>Specify which questions should appear in the form, in what order, and in which sections; all configurable on a per-property level.</li><li>Easily extend question customizations.</li><li>Questions that are only rendered when another question has a certain answer.</li><li>Repeated groups of questions; for example the contact information for every member of the applicant's family that may be enumerated by the applicant themselves.</li><li>Questions that may use answers provided earlier in the form to drive labels, options, etc.</li><li>Questions may be required to answer before submitting the form. This can also be configured per form.</li><li>Applicants may upload supporting documents from their browser such as photographs or PDFs.</li></ul><p><strong>The following are requirements that engineering set for themselves</strong>.</p><ul><li>Minimize the chance that forms get malconfigured.</li><li>Lean into type systems where they are supported.</li><li>Reuse the existing stack and tooling as much as possible; optimize for familiarity.</li><li>Persist form answers immutably in a relational database.</li></ul><h1>Implementing Data Driven Forms</h1><p>In summary: we'll persist forms, layouts, and questions in a relational database, serve that data through a GraphQL endpoint, and render the form and its questions according to the given layout. Once submitted, we'll persist the answers in an append-only table with a schema that looks like a key-value store.</p><p>Initially, form configurations will be described as text in TOML files that are checked into version control and ingested by the application and saved in the database; changes to those files will cause the previous configuration to be overwritten.</p><p>Questions will be members of a discriminated union, each having a single "type" which can be switched on to safely access the customizable parameters of that question. It will also drive how it is rendered and what shape its answer will take in the database.</p><p>Form questions consitute a tree; each may render zero, one, or more child questions depending on the state of the form as it is being filled out by the applicant.</p><h2>Iterative Design and Development</h2><p>Since the project was too big for a single story or pull request, we broke it out into milestones and iterated on the design in chunks.</p><ol><li>First and foremost I believed it was absolutely crucial to ask product for realistic examples of the forms we would need to be able to provide. The artifact of this effort was a Google Doc that enumerated all the questions of a real paper form that one of our customers was already using for applications. Engineering and product then sat down and went through each question and tested it against what was actually feasible to implement. We were able to consolidate question types and come up with a canonical list of the kinds of questions we would want to support. This is, perhaps obviously, the single most important part of development.</li><li>Since I'm principally a UI engineer, my first instinct was to stub the form data in the shape that I eventually would expect to get from the server. This allowed me to iterate on the data model while actually creating something interactable for the product manager to play with and use as a basis for requirements discussions. It also avoided thrashing on all the other layers of the stack since the data model was in a constant state of flux.</li><li>Once the form supported a few kinds of questions with low fidelity, we created an endpoint that I could use to send the answers to the server. This forced me to think about all the kinds of details that the server would need to consider to associate the given answers with their respective questions in the database.</li><li>When I was happy(ish) with the data model, I iterated on a GraphQL schema that would support sending the stubbed data to the UI. This took more effort than I anticipated; the GraphQL spec has lots of annoying realities. Once the data was being stubbed and served from the server, I could then wipe out a big chunk of the stubbed UI code.</li><li>The schema for serving questions was finished; the next step was to represent the data in a relational store and use a text format (TOML) for driving its content. This required <strong>fundamental</strong> changes to the data model, especially with regards to conditional and child questions. Initially, my data representation was a deeply nested tree. I reconsidered this approach and decided to flatten the structure and use references in place of the questions themselves. Though flattening the tree has some usability trade-offs, in general I thought it was a good decision since it helped avoid massive JSON objects in a single table cell and also reduced nesting in TOML files.</li><li>Finally, attention went back to rendering the form itself - this time focusing on high fidelity designs, testing on different browsers and devices, and fleshing out the rest of the question types. I also took this opportunity to dramatically simplify the frontend code now that I more deeply understood the model.</li></ol><h2>Representing Questions as Data</h2><p>Now we'll talk with more specifics about the data model we decided to use for form questions after considering the requirements.</p><p>Since the <em>kinds</em> of questions you see on forms is actually fairly finite, we decided to assign every question a single "type". These are some of the types we support:</p><ul><li>Boolean</li><li>Text</li><li>Select</li><li>Address</li><li>Phone Number</li><li>Email Address</li><li>Date</li><li>Date Range</li><li>Field Array</li><li>Upload</li></ul><p>We'll use this type to drive rendering, parameterization, and answer shapes. We'll start with the simplest version of a question.</p><pre><code class="json">{&quot;type&quot;: &quot;Boolean&quot;}
+</code></pre><p>This at least tells us how we should render it and what kind of value it will hold (<code>true</code> or <code>false</code>). But it's utterly useless unless we know what question the applicant is actually answering. Let's fix that!</p><pre><code class="json">{&quot;type&quot;: &quot;Boolean&quot;, &quot;name&quot;: &quot;is&#95;student&quot;}
+</code></pre><p>This includes a reference, by name, to the underlying question that this form question is describing. This imparts <em>semantic meaning</em> to the given answer.</p><p>So far so good? Let's add a little bit of complexity now. What if we want to ask the same question but for, for example, the applicant's spouse? We could add a new question <code>is&#95;spouse&#95;student</code> but this strategy will inevitably lead to the same problem we already have: an unbounded explosion of the number of questions the service (and engineers) will need to consider.</p><p>Instead, we'll add a new component to the object: context.</p><pre><code class="json">{&quot;type&quot;: &quot;Boolean&quot;, &quot;name&quot;: &quot;is&#95;student&quot;, &quot;context&quot;: &quot;spouse&quot;}
+</code></pre><p>There we go. Now we can reuse the same question for arbitrary contexts; this could reference the person filling out the form, the applicant themselves, the applicant's employer, their neighbor, whatever!</p><p>These fields, <code>name</code> and <code>context</code>, represent the question's fundamental <strong>identity</strong> and helps us to uniquely identify questions and answers. No two question definitions should share the same combination of name and context.</p><h3>Question Parameterization</h3><p>We've just described the most primitive shape a question may take. That alone would be enough to power a data driven form. However, our requirements dictate that we need to be able to customize the behavior of these questions.</p><p>Let's start with an example of customizing the options for a <code>Select</code> question.</p><pre><code class="json">{
+    &quot;type&quot;: &quot;Select&quot;,
+    &quot;name&quot;: &quot;language&#95;preference&quot;,
+    &quot;context&quot;: &quot;applicant&quot;,
+    &quot;params&quot;: {
+        &quot;label&quot;: &quot;What is your preferred language?&quot;,
+        &quot;options&quot;: &#91;
+            {&quot;label&quot;: &quot;English&quot;, &quot;value&quot;: &quot;en&quot;},
+            {&quot;label&quot;: &quot;Español&quot;, &quot;value&quot;: &quot;es&quot;},
+            {&quot;label&quot;: &quot;Français&quot;, &quot;value&quot;: &quot;fr&quot;},
+        &#93;
+    }
+}
+</code></pre><p>We've attached a new field <code>params</code> whose shape is going to be determined by the <code>type</code>. This <code>params</code> field will always be present on every question but its contents will vary. This is the heart of the usefulness of discriminated unions.</p><p>Here's another example for a <code>Text</code> question.</p><pre><code class="json">{
+    &quot;type&quot;: &quot;Text&quot;,
+    &quot;name&quot;: &quot;name&#95;first&quot;,
+    &quot;context&quot;: &quot;applicant&quot;,
+    &quot;params&quot;: {
+        &quot;label&quot;: &quot;Please tell us your first name&quot;,
+        &quot;placeholder&quot;: &quot;First name&quot;
+    }
+}
+</code></pre><h3>Supporting Conditional Questions</h3><p>One of our requirements is to support conditional questions: questions that are only rendered and visible when its parent question has a particular answer. This helps reduce the scope of the form for applicants since it hides lots of questions that are not applicable to them.</p><p>Let's start with a a basic conditional question.</p><pre><code class="json">{
+    &quot;type&quot;: &quot;Boolean&quot;,
+    &quot;name&quot;: &quot;submitting&#95;for&#95;applicant&quot;,
+    &quot;context&quot;: &quot;submitter&quot;,
+    &quot;params&quot;: {},
+    &quot;children&quot;: &#91;
+        {&quot;name&quot;: &quot;name&#95;first&quot;, &quot;context&quot;: &quot;submitter&quot;}
+    &#93;
+}
+</code></pre><p>There's a new field here: <code>children</code>. This is an ordered list of questions (by reference) that may be rendered depending on the answer. Notice that the condition for rendering the question is not shown: only a reference to the question. In order to keep the tree of questions flattened, the condition itself is located on the child question, like as follows.</p><pre><code class="json">{
+    &quot;type&quot;: &quot;Text&quot;,
+    &quot;name&quot;: &quot;name&#95;first&quot;,
+    &quot;context&quot;: &quot;submitter&quot;,
+    &quot;params&quot;: {
+        &quot;placeholder&quot;: &quot;What is your first name?&quot;
+    },
+    &quot;children&quot;: &#91;&#93;,
+    &quot;cond&quot;: {
+        &quot;type&quot;: &quot;includes&quot;,
+        &quot;values&quot;: &#91;true&#93;
+    }
+}
+</code></pre><p>We've added a new field <code>cond</code>. This field is present for all conditional child questions and describes the condition that must be met before it is rendered on the form. The condition object itself is another discriminated union: discriminated on its <code>type</code> to determine the other fields. In this case, <code>&quot;type&quot;: &quot;includes&quot;</code> implies the existence of a field called <code>values</code> which is a list of values that the parent answer may be in order for the condition to pass.</p><p>It is important to notice that child questions may have their own conditional questions, and so forth ad nauseam. Supporting deep nesting is not an issue technically, but it is a nightmare for the user experience.</p><h3>Supporting Repeated Questions</h3><p>Applicants must not only provide information about themselves but also some information about everyone who will be living with the applicant in the property. Since we don't know ahead of time how many people the applicant will be listing, we'll create a new type of question with support for repeating groups of questions an arbitrary number of times.</p><p>This is often expressed as a <em>field array</em> in libraries like Formik or redux-forms. We'll define a new question type <code>Array</code> and use its parameters to include a list of question references that will be repeated each time the user adds another entry.</p><pre><code class="json">{
+    &quot;type&quot;: &quot;Array&quot;,
+    &quot;name&quot;: &quot;household&#95;members&quot;,
+    &quot;context&quot;: &quot;household&quot;,
+    &quot;params&quot;: {
+        &quot;questions&quot;: &#91;
+            {&quot;name&quot;: &quot;name&#95;first&quot;, &quot;context&quot;: &quot;household&#95;member&quot;},
+            {&quot;name&quot;: &quot;name&#95;last&quot;, &quot;context&quot;: &quot;household&#95;member&quot;},
+            {&quot;name&quot;: &quot;phone&#95;number&quot;, &quot;context&quot;: &quot;household&#95;member&quot;},
+            {&quot;name&quot;: &quot;email&#95;address&quot;, &quot;context&quot;: &quot;household&#95;member&quot;},
+        &#93;
+    },
+    &quot;children&quot;: &#91;&#93;,
+    &quot;cond&quot;: null
+}
+
+{
+    &quot;type&quot;: &quot;Phone&quot;,
+    &quot;name&quot;: &quot;phone&#95;number&quot;,
+    &quot;context&quot;: &quot;household&#95;member&quot;,
+    &quot;params&quot;: {},
+    &quot;children&quot;: &#91;&#93;,
+    &quot;cond&quot;: null
+}
+</code></pre><p>This new <code>Array</code> type includes references to other questions defined in the form. This is a little like the conditional questions that we implemented above, but there's no condition to be passed. It's simply a description of what questions should be repeated when another entry is added.</p><p>Now we have a big problem: <code>name</code> and <code>context</code> are no longer enough to uniquely identify every question in the form! We only configured the question asking about a household member's phone number once; its a template for how all the instances of that question should behave.</p><p>We need to maintain a new value for each instance of every question. Let's talk more about that in the next section.</p><h2>Uniquely Identifying Questions and Answers</h2><p>We've already talked about <code>name</code> and <code>context</code> as parts of the identity model. In order to support repeated questions, we'll need a new component that we can rely on to distinguish different instances of the same repeated question. Let's call this component the <code>key</code> and begin representing identity as a standalone object.</p><pre><code class="json">{
+    &quot;name&quot;: &quot;phone&#95;number&quot;,
+    &quot;context&quot;: &quot;household&#95;member&quot;,
+    &quot;key&quot;: &quot;46e73a2b-0eaa-40f4-a5c8-c61da0e20541&quot;
+}
+</code></pre><p>Whenever the applicant adds a new entry to an <code>Array</code> question, we generate a UUID and assign it as the <code>key</code> to every question in the repeated group. By using a standalone object, we can keep the question definition and its identity as separate values. Most operations in the UI involve some kind of tuple of <code>{question, identity}</code>; the question for its type and parameters and the identity to know how to find the answer for that instance of the question.</p><p>The answer to the <code>Array</code> question itself is a list of those UUIDs.</p><p>We can serialize the identity into a string and use it as the input name. For example:<pre><code class="html">&lt;input type=&quot;text&quot; name=&quot;phone&#95;number/household&#95;member/46e73a2b-0eaa-40f4-a5c8-c61da0e20541&quot; /&gt;
+</code></pre></p><h2>Querying Data with GraphQL</h2><p>We'll expose form data through GraphQL using interfaces to represent these questions. With GraphQL, we no longer need the <code>type</code> field that we defined earlier. Instead, we'll use GraphQL's own meta field <code>&#95;&#95;typename</code> to replace it.</p><p>Queries may look something like this.</p><pre><code class="nohighlight">query Form&#40;$id: ID!&#41; {
+    form&#40;id: $id&#41; {
+        layouts {
+            name
+            sections {
+                name
+                title
+                description
+                questions {
+                    name
+                    context
+                }
+            }
+        }
+
+        questions {
+            &#95;&#95;typename
+            name
+            context
+
+            params {
+                ... on Text {
+                    placeholder
+                }
+
+                ... on Select {
+                    options {
+                        label
+                        value
+                    }
+                }
+
+                ... on Array {
+                    questions {
+                        name
+                        context
+                    }
+                }
+            }
+
+            children {
+                name
+                context
+            }
+
+            cond {
+                &#95;&#95;typename
+
+                ... on Includes {
+                    values
+                }
+            }
+        }
+    }
+}
+</code></pre><p>You may notice this is not a normalized view of the data; I thought the juice wasn't worth the  squeeze since its easier to work with the denormalized form in most cases.</p><p>We used a tool provided by our GraphQL client library to generate TypeScript definition files from GraphQL schemas. We broke out the query into reusable fragments so we could leverage the standalone types which could be reused for different contexts. Being able to use the GraphQL types as TypeScript types is <strong>really cool</strong> and I highly recommend it. Not only does it prevent a whole class of errors caused by typos but it enables discovery for engineers unfamiliar with the feature.</p><h2>Rendering and Marshaling</h2><p>For our purposes, we only used a few libraries that we were already using for other parts of the application. Most importantly a form state management library called <strong>Formik</strong>. I reviewed many other libraries but none, not even Formik, seemed to be designed for the kind of data-driven forms that I was building. They all pretty much expected form inputs to be known ahead of time and manually defined as code. There might be an opportunity to do something better here...</p><p>YupJS is another library we leveraged for this feature; it's used here to derive validation schemas based on the question's <code>type</code>. This integrates well with Formik, though some adjustments to Formik's error handling had to be made to accommodate our needs.</p><p><hr /></p><p>Since questions can be identified by their <code>type</code> (or <code>&#95;&#95;typename</code>), we'll create a React component for each one. Each of these components will take the same <code>props</code> payload; only their question parameters will differ. We can model these components using TypeScript.</p><pre><code class="ts">interface Identity {
+    name: string;
+    context: string;
+    key?: string;
+}
+
+// This narrows the GraphQL union to the member promised by the type. When
+// narrowed, we can safely access `params` and its fields that are available
+// only for that type.
+type Question&lt;T extends string&gt; = Extract&lt;QuestionData, { &#95;&#95;typename: T }&gt;
+
+// With this narrowing generic, we can then define the props that our component
+// will expect.
+interface QuestionControlProps&lt;T extends string&gt; {
+
+    // Contains the question definition and its parameters.
+    question: Question&lt;T&gt;;
+
+    // Uniquely identifies the particular instance of the given question.
+    identity: Identity;
+
+    // Function to derive a YupJS schema for the given identity. We had
+    // special reasons to use a function here instead of passing a schema
+    // in directly.
+    createSchema: &#40;identity: Identity&#41; =&gt; Yup.MixedSchema;
+
+    // Renders the question associated with the given identity. This allows
+    // questions to render their own child questions.
+    render: &#40;identity: Identity&#41; =&gt; React.ReactNode;
+}
+</code></pre><p>This is a basic summary of the types involved when creating components for each question type. Here's a bare bones example of declaring a component for the <code>Select</code> type.</p><pre><code class="tsx">// Utility for serializing identity objects to strings.
+import { createFormKey } from &quot;../utils&quot;;
+
+const SelectControl = &#40;props: QuestionControlProps&lt;&quot;Select&quot;&gt;&#41; =&gt; {
+    const { label, options } = props.question.params;
+
+    return &#40;
+        &lt;div&gt;
+            &lt;label&gt;{label}&lt;/label&gt;
+            &lt;select name={createFormKey&#40;props.identity&#41;}&gt;
+                {options.map&#40;&#40;option&#41; =&gt; &#40;
+                    &lt;option value={option.value}&gt;{option.label}&lt;/option&gt;
+                &#41;&#41;}
+            &lt;/select&gt;
+        &lt;/div&gt;
+    &#41;;
+}
+</code></pre><p><hr /></p><p>When the form is successfully submitted, we need to create a set of values that we can send to the server to represent all the answers given in the form. The payload for that might look something like this.</p><pre><code class="json">&#91;
+    {&quot;name&quot;: &quot;language&#95;preference&quot;, &quot;context&quot;: &quot;applicant&quot;, &quot;key&quot;: null, &quot;answer&quot;: &quot;\&quot;en\&quot;&quot;},
+    {&quot;name&quot;: &quot;name&#95;first&quot;, &quot;context&quot;: &quot;applicant&quot;, &quot;key&quot;: null, &quot;answer&quot;: &quot;\&quot;Sam\&quot;&quot;},
+    {&quot;name&quot;: &quot;name&#95;last&quot;, &quot;context&quot;: &quot;applicant&quot;, &quot;key&quot;: null, &quot;answer&quot;: &quot;\&quot;Ferrell\&quot;&quot;},
+&#93;
+</code></pre><p>These values contain the identity of the question being answered as well as a JSON encoded answer. We use JSON to represent complex answers such as addresses.</p><p>There's a problem with a naive implementation of this: conditional questions can be answered and then later pruned from view because the parent answer changed. It's important that we <strong>only persist accurate views of the form</strong> since we need to capture the <strong>intent</strong> of the applicant's submission. This means ignoring answers to questions which are no longer relevant to the form. This issue also arises when marshaling <code>Array</code> questions since users may, for example, remove an entry and add another one. We don't want to save the removed entry since it no longer reflects the intent of the applicant.</p><p>This need conflicts with the centrally managed form state which does not prune values simply because the associated input is no longer being rendered. But we need the centrally managed state because the entire form is not rendered at the same time; its split up into sections.</p><p>Since we can think of the form questions as a tree, we can walk it like one and push answered nodes into a result set. We'll run the conditions for each question that has them against the current form state; when the condition fails, we short circuit that branch entirely. We'll also do this for <code>Array</code> questions, saving only entries which are actually rendered on the form.</p><h2>Persisting and Querying Answers</h2><p>One of our requirements is to capture a perfect history of all form submissions and changes to those submissions. Government audits of affordable housing properties are dreaded by owners and property managers alike; being able to provide auditors with structured and well maintained data goes a long way to resolving potentially costly conflicts. Furthermore, our mission as a company includes curbing fraud perpetrated not only by applicants but property managers as well.</p><p>To this end, we'll setup a simple constraint: never update answers. With past mistakes and this rule in mind, we designed a key-value table that resembles the following.</p><table><thead><tr><th>name</th><th>context</th><th>key</th><th>changed_at</th><th>answer</th></tr></thead><tbody><tr><td><code>language&#95;preference</code></td><td><code>applicant</code></td><td><code>null</code></td><td><code>2021-02-03T16:04:36.400Z</code></td><td><code>&quot;en&quot;</code></td></tr><tr><td><code>language&#95;preference</code></td><td><code>applicant</code></td><td><code>null</code></td><td><code>2021-02-05T17:23:04.400Z</code></td><td><code>&quot;es&quot;</code></td></tr></tbody></table><blockquote><p> For our case, we reference the question in the "question bank" directly and constrain it with a foreign key. There are numerous other columns missing here: a reference to the user who performed the change, a place to store an encrypted version of the given answer, and a reference to the submission that the answer is associated with. </p></blockquote><p>Here's a small example of the append-only nature of this table. The previously given answer of <code>&quot;en&quot;</code> was a mistake and later corrected to <code>&quot;es&quot;</code>. We didn't remove or update the previous answer: we just added a new row.</p><p>Most of the time the application will only care about the <strong>latest values</strong> of a submission. Here's one example of a SQL query to only return the latest values.</p><pre><code class="sql">SELECT
+    answers.name,
+    answers.context,
+    answers.key,
+    answers.changed&#95;at,
+    answers.answer
+FROM answers
+INNER JOIN &#40;
+    SELECT
+        answers.name,
+        answers.context,
+        answers.key,
+        MAX&#40;answers.changed&#95;at&#41; as changed&#95;at
+    FROM answers
+&#41; AS latest
+    ON latest.name = answers.name
+        AND latest.context = answers.context
+        AND latest.key = answers.key
+        AND latest.changed&#95;at = answers.changed&#95;at
+WHERE answers.submission&#95;id = ?
+</code></pre><p><em>Note: We can use this query to define a view in order to simplify querying.</em></p><p>This resolves our issue of <strong>too many columns</strong> by "going down, not across". This has trade-offs, of course.</p><ul><li>The type and shape of answers are only enforced in the application layer.</li><li>Using saved answers as part of a sophisticated query is definitely more complex depending on what leverage the database offers for JSON values.</li><li>Querying immutable tables for the latest values is more expensive than querying a table whose updates are performed <em>in place</em>.</li></ul><h1>Trade-offs of the Design</h1><p>Though we believe this satisfies most of our requirements, it is not without cost. Here are some of the limiting constraints of this design.</p><ul><li>Highly tailored experiences are not really possible. Customizations exist for everyone or they exist for no one. This may be curbed with well designed escape hatches.</li><li>The forms themselves appear very "regular" and top to bottom. Since we prioritized mobile views of the form this is absolutely not an issue for us. The forms <em>look</em> data driven. More sophisticated layout definitions may help here.</li><li>This design fails one of our requirements: <strong>familiarity</strong>. It is not familiar to most developers whose only experience has been with forms that were defined by hand. The components of identity and the process of marshaling the form answers are especially unfamiliar.</li><li>Since no assumptions can be made about the structure of forms ahead of time, all interactions with the underlying form data need to implemented with caution and consideration.</li></ul><p><hr /></p><p>This has been a large project for me and I'm glad to have wrapped it up finally. In retrospect I wish I had done more research into existing solutions or services since I'm sure there's plenty of prior work done in this area. Once again, this is more about my own experiences rather than a how-to; I'm sure there's lots of simplifying ideas that I hadn't considered.</p><p>Sam Ferrell</p></div></div></body>
