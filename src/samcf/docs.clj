@@ -62,7 +62,10 @@
     [:meta {:name "description" :content desc}]
     [:title title " &mdash; " "samcf.me"]
     (for [name #{"reset" "style" "markdown"}]
-      [:style (slurp (format "docs/assets/%s.css" name))])]
+      [:style (slurp (format "docs/assets/%s.css" name))])
+    [:style (slurp "docs/assets/highlight/github-gist.css")]
+    (page/include-js "/assets/highlight/highlight.pack.js")
+    [:script "hljs.highlightAll();"]]
    [:body
     [:div.root
      [:header
@@ -73,7 +76,10 @@
        :title "Check out my projects on Github"
        :external true)
       (link-to "mailto:mail@samcf.me" :title "Send me an email")
-      (link-to "source.html" :title "Navigate to this project's source code")
+      (link-to
+       "/source.html"
+       :text "source.html"
+       :title "Navigate to this project's source code")
       [:address "denver, co"]]
      content]]))
 
@@ -126,21 +132,23 @@
     (layout
      [:div.markdown
       [:h2 "Source Code"]
-      [:p (str "The following Clojure is responsible for generating the content"
-               " on this site. The content is primarily driven by the public"
-               " gists on ")
-       (link-to
-        "//gist.github.com/samcf"
-        :text "gist.github.com/samcf"
-        :title "Public gists of Sam Ferrell"
-        :external true)
-       ". The project itself is hosted here "
-       (link-to
-        "//github.com/samcf/samcf.github.io"
-        :text "github.com/samcf/samcf"
-        :title "Navigate to the project repo"
-        :external true)
-       "."]
+      (str "The following Clojure is responsible for generating the content"
+           " on this site. The content is primarily driven by the public"
+           " gists on ")
+      (link-to
+       "//gist.github.com/samcf"
+       :text "gist.github.com/samcf"
+       :title "Public gists of Sam Ferrell"
+       :external true)
+      ". The project itself is hosted here "
+      (link-to
+       "//github.com/samcf/samcf.github.io"
+       :text "github.com/samcf/samcf"
+       :title "Navigate to the project repo"
+       :external true)
+      "."
+      [:br]
+      [:br]
       [:pre [:code (hiccup.util/escape-html (slurp "src/samcf/docs.clj"))]]]
      :title "Source code"
      :desc (str "The Clojure implementation of my static site generator which"

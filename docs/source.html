@@ -126,7 +126,86 @@ header {
 .markdown em {
     font-style: italic;
 }
-</style></head><body><div class="root"><header><a href="/" title="Navigate to the home page">samcf.me</a><a href="//github.com/samcf" target="_blank" title="Check out my projects on Github">github.com/samcf</a><a href="mailto:mail@samcf.me" title="Send me an email">mailto:mail@samcf.me</a><a href="source.html" title="Navigate to this project&apos;s source code">source.html</a><address>denver, co</address></header><div class="markdown"><h2>Source Code</h2><p>The following Clojure is responsible for generating the content on this site. The content is primarily driven by the public gists on <a href="//gist.github.com/samcf" target="_blank" title="Public gists of Sam Ferrell">gist.github.com/samcf</a>. The project itself is hosted here <a href="//github.com/samcf/samcf.github.io" target="_blank" title="Navigate to the project repo">github.com/samcf/samcf</a>.</p><pre><code>(ns samcf.docs
+</style><style>/**
+ * GitHub Gist Theme
+ * Author : Anthony Attard - https://github.com/AnthonyAttard
+ * Author : Louis Barranqueiro - https://github.com/LouisBarranqueiro
+ */
+
+.hljs {
+  display: block;
+  background: white;
+  padding: 0.5em;
+  color: #333333;
+  overflow-x: auto;
+}
+
+.hljs-comment,
+.hljs-meta {
+  color: #969896;
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-strong,
+.hljs-emphasis,
+.hljs-quote {
+  color: #df5000;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-type {
+  color: #d73a49;
+}
+
+.hljs-literal,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-attribute {
+  color: #0086b3;
+}
+
+.hljs-section,
+.hljs-name {
+  color: #63a35c;
+}
+
+.hljs-tag {
+  color: #333333;
+}
+
+.hljs-title,
+.hljs-attr,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-selector-attr,
+.hljs-selector-pseudo {
+  color: #6f42c1;
+}
+
+.hljs-addition {
+  color: #55a532;
+  background-color: #eaffea;
+}
+
+.hljs-deletion {
+  color: #bd2c00;
+  background-color: #ffecec;
+}
+
+.hljs-link {
+  text-decoration: underline;
+}
+
+.hljs-number {
+  color: #005cc5;
+}
+
+.hljs-string {
+  color: #032f62;
+}
+</style><script src="/assets/highlight/highlight.pack.js" type="text/javascript"></script><script>hljs.highlightAll();</script></head><body><div class="root"><header><a href="/" title="Navigate to the home page">samcf.me</a><a href="//github.com/samcf" target="_blank" title="Check out my projects on Github">github.com/samcf</a><a href="mailto:mail@samcf.me" title="Send me an email">mailto:mail@samcf.me</a><a href="/source.html" title="Navigate to this project&apos;s source code">source.html</a><address>denver, co</address></header><div class="markdown"><h2>Source Code</h2>The following Clojure is responsible for generating the content on this site. The content is primarily driven by the public gists on <a href="//gist.github.com/samcf" target="_blank" title="Public gists of Sam Ferrell">gist.github.com/samcf</a>. The project itself is hosted here <a href="//github.com/samcf/samcf.github.io" target="_blank" title="Navigate to the project repo">github.com/samcf/samcf</a>.<br /><br /><pre><code>(ns samcf.docs
   (:require [clj-http.client :as client]
             [clojure.core.async :as async]
             [clojure.string :as string]
@@ -190,7 +269,10 @@ header {
     [:meta {:name &quot;description&quot; :content desc}]
     [:title title &quot; &amp;mdash; &quot; &quot;samcf.me&quot;]
     (for [name #{&quot;reset&quot; &quot;style&quot; &quot;markdown&quot;}]
-      [:style (slurp (format &quot;docs/assets/%s.css&quot; name))])]
+      [:style (slurp (format &quot;docs/assets/%s.css&quot; name))])
+    [:style (slurp &quot;docs/assets/highlight/github-gist.css&quot;)]
+    (page/include-js &quot;/assets/highlight/highlight.pack.js&quot;)
+    [:script &quot;hljs.highlightAll();&quot;]]
    [:body
     [:div.root
      [:header
@@ -201,7 +283,10 @@ header {
        :title &quot;Check out my projects on Github&quot;
        :external true)
       (link-to &quot;mailto:mail@samcf.me&quot; :title &quot;Send me an email&quot;)
-      (link-to &quot;source.html&quot; :title &quot;Navigate to this project&apos;s source code&quot;)
+      (link-to
+       &quot;/source.html&quot;
+       :text &quot;source.html&quot;
+       :title &quot;Navigate to this project&apos;s source code&quot;)
       [:address &quot;denver, co&quot;]]
      content]]))
 
@@ -254,21 +339,23 @@ header {
     (layout
      [:div.markdown
       [:h2 &quot;Source Code&quot;]
-      [:p (str &quot;The following Clojure is responsible for generating the content&quot;
-               &quot; on this site. The content is primarily driven by the public&quot;
-               &quot; gists on &quot;)
-       (link-to
-        &quot;//gist.github.com/samcf&quot;
-        :text &quot;gist.github.com/samcf&quot;
-        :title &quot;Public gists of Sam Ferrell&quot;
-        :external true)
-       &quot;. The project itself is hosted here &quot;
-       (link-to
-        &quot;//github.com/samcf/samcf.github.io&quot;
-        :text &quot;github.com/samcf/samcf&quot;
-        :title &quot;Navigate to the project repo&quot;
-        :external true)
-       &quot;.&quot;]
+      (str &quot;The following Clojure is responsible for generating the content&quot;
+           &quot; on this site. The content is primarily driven by the public&quot;
+           &quot; gists on &quot;)
+      (link-to
+       &quot;//gist.github.com/samcf&quot;
+       :text &quot;gist.github.com/samcf&quot;
+       :title &quot;Public gists of Sam Ferrell&quot;
+       :external true)
+      &quot;. The project itself is hosted here &quot;
+      (link-to
+       &quot;//github.com/samcf/samcf.github.io&quot;
+       :text &quot;github.com/samcf/samcf&quot;
+       :title &quot;Navigate to the project repo&quot;
+       :external true)
+      &quot;.&quot;
+      [:br]
+      [:br]
       [:pre [:code (hiccup.util/escape-html (slurp &quot;src/samcf/docs.clj&quot;))]]]
      :title &quot;Source code&quot;
      :desc (str &quot;The Clojure implementation of my static site generator which&quot;
