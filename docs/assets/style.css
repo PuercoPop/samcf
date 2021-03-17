@@ -61,3 +61,17 @@ footer {
 .about {
     margin-bottom: 1rem;
 }
+
+@media (max-width: 600px) {
+    .root {
+        margin: 0;
+        overflow-x: hidden;
+        font-size: 14px;
+    }
+
+    header,
+    header > a,
+    header > div {
+        display: block;
+    }
+}

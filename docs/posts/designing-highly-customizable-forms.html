@@ -110,6 +110,20 @@ footer {
 .about {
     margin-bottom: 1rem;
 }
+
+@media (max-width: 600px) {
+    .root {
+        margin: 0;
+        overflow-x: hidden;
+        font-size: 14px;
+    }
+
+    header,
+    header > a,
+    header > div {
+        display: block;
+    }
+}
 </style><style>.markdown ul,
 .markdown ol,
 .markdown table,
@@ -124,6 +138,7 @@ footer {
 .markdown h4,
 .markdown h5,
 .markdown h6 {
+    line-height: 1;
     font-weight: bold;
     letter-spacing: 1px;
     text-transform: uppercase;
