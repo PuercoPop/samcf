@@ -1,6 +1,5 @@
 (ns samcf.docs
   (:require [clj-http.client :as client]
-            [clojure.core.async :as async]
             [clojure.string :as string]
             [hiccup.core :as hiccup]
             [hiccup.page :as page]
@@ -19,14 +18,11 @@
 
 (defn fetch [& entries]
   (->> entries
-       (mapv
-        (fn [post] (async/go [post (-> post :url client/get :body)])))
-       (async/merge)
-       (async/reduce
+       (mapv (fn [post] (future [post (-> post :url client/get :body)])))
+       (reduce
         (fn [m v]
-          (let [[p c] v]
-            (update m (:type p) conj v))) {})
-       (async/<!!)))
+          (let [d @v [p c] d]
+            (update m (:type p) conj d))) {})))
 
 (def gist->entry
   (comp (map (fn [data] [data (-> data :files vals first)]))
@@ -159,5 +155,3 @@
         files (->> pages (mapcat #(render % gists)))]
     (doseq [[filename content] files]
       (spit filename content))))
-
-(-main)
