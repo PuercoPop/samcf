@@ -19,10 +19,11 @@
 (defn fetch [& entries]
   (->> entries
        (mapv (fn [post] (future [post (-> post :url client/get :body)])))
+       (mapv deref)
        (reduce
         (fn [m v]
-          (let [d @v [p c] d]
-            (update m (:type p) conj d))) {})))
+          (let [[p c] v]
+            (update m (:type p) conj v))) {})))
 
 (def gist->entry
   (comp (map (fn [data] [data (-> data :files vals first)]))

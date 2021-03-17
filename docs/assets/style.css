@@ -1,7 +1,31 @@
+@font-face {
+    font-family: valkyrie_t4;
+    font-style: normal;
+    font-weight: normal;
+    font-stretch: normal;
+    src: url("/assets/font/valkyrie_t4_regular.woff2") format('woff2');
+}
+
+@font-face {
+    font-family: valkyrie_t4;
+    font-style: italic;
+    font-weight: normal;
+    font-stretch: normal;
+    src: url("/assets/font/valkyrie_t4_italic.woff2") format('woff2');
+}
+
+@font-face {
+    font-family: valkyrie_t4;
+    font-style: normal;
+    font-weight: bold;
+    font-stretch: normal;
+    src: url("/assets/font/valkyrie_t4_bold.woff2") format('woff2');
+}
+
 .root {
     box-sizing: border-box;
     color: #333;
-    font-family: monospace;
+    font-family: valkyrie_t4, serif;
     line-height: 1.5;
     margin: 0 auto;
     max-width: 640px;
