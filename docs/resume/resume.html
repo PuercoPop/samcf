@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="description" content="Samuel Ferrell's CV" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;1,900&display=block" rel="stylesheet">
+        <title>Samuel Ferrell (CV)</title>
+        <style>
+            /* http://meyerweb.com/eric/tools/css/reset/ 
+            v2.0 | 20110126
+            License: none (public domain)
+            */
+    
+            html, body, div, span, applet, object, iframe,
+            h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+            a, abbr, acronym, address, big, cite, code,
+            del, dfn, em, img, ins, kbd, q, s, samp,
+            small, strike, strong, sub, sup, tt, var,
+            b, u, i, center,
+            dl, dt, dd, ol, ul, li,
+            fieldset, form, label, legend,
+            table, caption, tbody, tfoot, thead, tr, th, td,
+            article, aside, canvas, details, embed, 
+            figure, figcaption, footer, header, hgroup, 
+            menu, nav, output, ruby, section, summary,
+            time, mark, audio, video {
+                margin: 0;
+                padding: 0;
+                border: 0;
+                font-size: 100%;
+                font: inherit;
+                vertical-align: baseline;
+            }
+            /* HTML5 display-role reset for older browsers */
+            article, aside, details, figcaption, figure, 
+            footer, header, hgroup, menu, nav, section {
+                display: block;
+            }
+            body {
+                line-height: 1;
+            }
+            ol, ul {
+                list-style: none;
+            }
+            blockquote, q {
+                quotes: none;
+            }
+            blockquote:before, blockquote:after,
+            q:before, q:after {
+                content: '';
+                content: none;
+            }
+            table {
+                border-collapse: collapse;
+                border-spacing: 0;
+            }
+        </style>
+        <style>
+            body {
+                font-size: 12px;
+                line-height: 1.5;
+                font-family: 'Merriweather', serif;
+                color: #202833;
+                max-width: 800px;
+                font-display: block;
+            }
+
+            article {
+                margin: 36px;
+            }
+
+            strong {
+                font-weight: 900;
+            }
+
+            h1 { font-size: 2.00em; }
+            h2 { font-size: 1.30em; }
+            h3 { font-size: 1.15em; }
+            h2 { margin-top: 1em; }
+            h2, h3 { text-transform: uppercase; }
+
+            a:link,
+            a:visited,
+            a:hover {
+                text-decoration: none;
+                color: inherit;
+            }
+
+            address {
+                font-weight: 300;
+                display: block;
+            }
+
+            address a,
+            address span {
+                padding-right: 16px;
+            }
+
+            section {
+                margin-top: 16px;
+                padding-left: 3rem;
+            }
+
+            ul {
+                list-style-type: circle;
+                list-style-position: inside;
+                padding-left: 3em;
+                text-indent: -1.5em;
+                color: #404b5a;
+                padding-right: 3em;
+            }
+
+            ul li {
+                margin-top: 6px;
+            }
+
+            .detail {
+                display: flex;
+                justify-content: space-between;
+            }
+        </style>
+    </head>
+    <body>
+        <article>
+            <h1>Samuel Ferrell</h1>
+            <address>
+                <a href="mailto:samcferrell@gmail.com">mail@samcf.me</a>
+                <a href="tel:7278341235">727.834.1235</a>
+                <a href="https://samcf.me">https://samcf.me</a>
+                <a href="https://github.com/samcf">https://github.com/samcf</a>
+                <span>Denver, CO</span>
+            </address>
+
+            <h2>Experience</h2>
+            <section>
+                <div class="detail">
+                    <h3>Haven Connect</h3>
+                    <div>Denver, CO (2019 - 2021)</div>
+                </div>
+                <div class="detail">
+                    <div>Housing waitlist management and automation</div>
+                    <div>Engineering Lead</div>
+                </div>
+                <ul>
+                    <li>Developed an internal browser-based tool which validated and transformed customer data during onboarding. This preprocess ETL tool reduced implementation time by about 20% by catching flaws in customer data early.</li>
+                    <li>Implemented waitlist update automation with a batch messaging broadcast system in Elixir to send emails, text messages, and physical letters to thousands of housing applicants to notify them to update their application. Scheduled work using PostgreSQL as a job queue which handled cases like rate limits, timeouts, and insufficient contact information.</li>
+                    <li>Designed and implemented a highly configurable form system which provided customers with forms that are specific to their property's needs. Customizations were defined in TOML documents to be easily updated by customer success. Form submissions are persisted immutably in a PostgreSQL database which can be used as a trusted record of truth in the case of audits.</li>
+                    <li>Lead a team of four engineers while practicing agile development. Helped plan product roadmaps and developed user stories with the CEO. Practiced code reviews, sprint retrospectives, and story planning.</li>
+                </ul>
+            </section>
+
+            <section>
+                <div class="detail">
+                    <h3>CS Disco</h3>
+                    <div>Austin, TX (2015 - 2019)</div>
+                </div>
+                <div class="detail">
+                    <div>Legal document discovery and review</div>
+                    <div>Software Engineer</div>
+                </div>
+                <ul>
+                    <li>Implemented an efficient filesystem explorer with TypeScript and React using an LRU cache with virtualized rendering to display the user's files as a tree. This supported arbitrary selections (and deselections) that allowed the user to attach metadata likes tags to those files.</li>
+                    <li>Designed a human-readable serialization format of the current search state that could be persisted in the URL which supported complex queries, filters, and sorting.</li>
+                    <li>Authored a ReduxJS extension called a redux-keyed-reducer which allowed developers to maintain multiple independent copies of the same reducer state. This allowed us to develop complex features while keeping the reducer state simple.</li>
+                </ul>
+            </section>
+
+            <h2>Education</h2>
+            <section>
+                <div class="detail">
+                    <h3>St. Petersburg College</h3>
+                    <div>St. Petersburg, FL (2008-2010)</div>
+                </div>
+                <ul>
+                    <li>Studied math, statistics, and advertising.</li>
+                    <li>Tutored technical writing and basic statistics to dozens of students. Promoted use of the tutoring center by giving fifteen minute class presentations.</li>
+                    <li>Helped a 76 year old woman receive an <strong>A</strong> in her computer science class.</li>
+                </ul>
+            </section>
+        </article>
+    </body>
+</html>
