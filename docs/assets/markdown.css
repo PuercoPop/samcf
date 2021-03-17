@@ -59,6 +59,10 @@
     padding: 4px 8px;
 }
 
+.markdown strong {
+    font-weight: bold;
+}
+
 .markdown em {
     font-style: italic;
 }

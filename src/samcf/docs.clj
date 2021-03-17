@@ -157,5 +157,3 @@
         files (->> pages (mapcat #(render % gists)))]
     (doseq [[filename content] files]
       (spit filename content))))
-
-(-main)

@@ -83,7 +83,7 @@ a:hover { text-decoration: underline; }
     color: #333;
     font-family: valkyrie_t4, serif;
     font-size: 17px;
-    line-height: 1.6;
+    line-height: 1.4;
     margin: 60px 0 0 100px;
     max-width: 640px;
     padding: 0 16px;
@@ -169,6 +169,10 @@ footer {
 .markdown table th {
     border: 1px solid #ddd;
     padding: 4px 8px;
+}
+
+.markdown strong {
+    font-weight: bold;
 }
 
 .markdown em {
@@ -412,5 +416,4 @@ footer {
         files (-&gt;&gt; pages (mapcat #(render % gists)))]
     (doseq [[filename content] files]
       (spit filename content))))
-
-(-main)</code></pre></div><footer>Sam Ferrell 2021</footer></div></body>
+</code></pre></div><footer>Sam Ferrell 2021</footer></div></body>
