@@ -18,12 +18,12 @@
 }
 
 .markdown code { font-family: monospace; }
-.markdown h1 { font-size: 24px; }
+.markdown h1 { font-size: 26px; }
 .markdown h2 { font-size: 20px; }
 .markdown h3 { font-size: 18px; }
 
 .markdown pre code {
-    background-color: #f9f9f9;
+    background-color: #fff;
     border-radius: 3px;
     border: 1px solid #e6e6e6;
     font-size: 12px;
@@ -32,8 +32,9 @@
 }
 
 .markdown p code {
-    background-color: #f2f2f2;
+    background-color: #fff;
     border-radius: 2px;
+    font-size: 13px;
     font-weight: bold;
     padding: 0 4px;
 }
@@ -44,6 +45,7 @@
 .markdown li + li { margin-top: 4px; }
 
 .markdown table {
+    font-size: 13px;
     width: 100%;
 }
 

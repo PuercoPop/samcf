@@ -71,20 +71,40 @@ table {
     src: url("/assets/font/valkyrie_t4_bold.woff2") format('woff2');
 }
 
+body {
+    background-color: #f9f9f9;
+}
+
+a:link, a:visited { color: #333; }
+a:hover { text-decoration: underline; }
+
 .root {
     box-sizing: border-box;
     color: #333;
     font-family: valkyrie_t4, serif;
-    line-height: 1.5;
-    margin: 0 auto;
+    font-size: 17px;
+    line-height: 1.6;
+    margin: 60px 0 0 100px;
     max-width: 640px;
     padding: 0 16px;
+}
+
+header, footer {
+    font-size: 13px;
+    font-family: monospace;
+    line-height: 2;
 }
 
 header {
     display: flex;
     justify-content: space-between;
-    margin: 16px 0;
+    margin: 24px 0;
+}
+
+footer {
+    margin: 32px 0 24px 0;
+    border-top: 1px solid #ccc;
+    font-style: italic;
 }
 
 .about {
@@ -110,12 +130,12 @@ header {
 }
 
 .markdown code { font-family: monospace; }
-.markdown h1 { font-size: 24px; }
+.markdown h1 { font-size: 26px; }
 .markdown h2 { font-size: 20px; }
 .markdown h3 { font-size: 18px; }
 
 .markdown pre code {
-    background-color: #f9f9f9;
+    background-color: #fff;
     border-radius: 3px;
     border: 1px solid #e6e6e6;
     font-size: 12px;
@@ -124,8 +144,9 @@ header {
 }
 
 .markdown p code {
-    background-color: #f2f2f2;
+    background-color: #fff;
     border-radius: 2px;
+    font-size: 13px;
     font-weight: bold;
     padding: 0 4px;
 }
@@ -136,6 +157,7 @@ header {
 .markdown li + li { margin-top: 4px; }
 
 .markdown table {
+    font-size: 13px;
     width: 100%;
 }
 
@@ -311,7 +333,8 @@ header {
        :text &quot;source.html&quot;
        :title &quot;Navigate to this project&apos;s source code&quot;)
       [:address &quot;denver, co&quot;]]
-     content]]))
+     content
+     [:footer &quot;Sam Ferrell 2021&quot;]]]))
 
 (defmulti render (fn [filename _] filename))
 
@@ -325,14 +348,14 @@ header {
    (apply
     str
     (str
-     &quot;### Welcome!\n&quot;
-     &quot;Software engineer specializing in user interfaces, browser applications,&quot;
-     &quot; relational data modeling, and board game programming. Experience with&quot;
-     &quot; small team management, product planning, and engineering processes.&quot;
-     &quot; Interested in small teams with focused purposes for underserved domains&quot;
-     &quot; and populations. Very familiar with TypeScript, SQL, React, Elixir, and&quot;
-     &quot; Clojure.\n\n&quot;
-     &quot;### Posts\n&quot;))
+     &quot;## Welcome!\n&quot;
+     &quot;My name is **Sam Ferrell**; I&apos;m a software engineer specializing in user&quot;
+     &quot; interfaces, browser applications, relational data modeling, and board&quot;
+     &quot; game programming. Experience with small team management, product&quot;
+     &quot; planning, and engineering processes. Interested in focused teams and&quot;
+     &quot; social missions for underserved domains and populations. Very familiar&quot;
+     &quot; with TypeScript, SQL, React, Elixir, and Clojure.\n\n&quot;
+     &quot;## Posts\n&quot;))
    (vector filename)
    (vector)))
 
@@ -389,4 +412,5 @@ header {
         files (-&gt;&gt; pages (mapcat #(render % gists)))]
     (doseq [[filename content] files]
       (spit filename content))))
-</code></pre></div></div></body>
+
+(-main)</code></pre></div><footer>Sam Ferrell 2021</footer></div></body>

@@ -78,7 +78,8 @@
        :text "source.html"
        :title "Navigate to this project's source code")
       [:address "denver, co"]]
-     content]]))
+     content
+     [:footer "Sam Ferrell 2021"]]]))
 
 (defmulti render (fn [filename _] filename))
 
@@ -92,14 +93,14 @@
    (apply
     str
     (str
-     "### Welcome!\n"
-     "Software engineer specializing in user interfaces, browser applications,"
-     " relational data modeling, and board game programming. Experience with"
-     " small team management, product planning, and engineering processes."
-     " Interested in small teams with focused purposes for underserved domains"
-     " and populations. Very familiar with TypeScript, SQL, React, Elixir, and"
-     " Clojure.\n\n"
-     "### Posts\n"))
+     "## Welcome!\n"
+     "My name is **Sam Ferrell**; I'm a software engineer specializing in user"
+     " interfaces, browser applications, relational data modeling, and board"
+     " game programming. Experience with small team management, product"
+     " planning, and engineering processes. Interested in focused teams and"
+     " social missions for underserved domains and populations. Very familiar"
+     " with TypeScript, SQL, React, Elixir, and Clojure.\n\n"
+     "## Posts\n"))
    (vector filename)
    (vector)))
 
@@ -156,3 +157,5 @@
         files (->> pages (mapcat #(render % gists)))]
     (doseq [[filename content] files]
       (spit filename content))))
+
+(-main)

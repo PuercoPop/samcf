@@ -71,20 +71,40 @@ table {
     src: url("/assets/font/valkyrie_t4_bold.woff2") format('woff2');
 }
 
+body {
+    background-color: #f9f9f9;
+}
+
+a:link, a:visited { color: #333; }
+a:hover { text-decoration: underline; }
+
 .root {
     box-sizing: border-box;
     color: #333;
     font-family: valkyrie_t4, serif;
-    line-height: 1.5;
-    margin: 0 auto;
+    font-size: 17px;
+    line-height: 1.6;
+    margin: 60px 0 0 100px;
     max-width: 640px;
     padding: 0 16px;
+}
+
+header, footer {
+    font-size: 13px;
+    font-family: monospace;
+    line-height: 2;
 }
 
 header {
     display: flex;
     justify-content: space-between;
-    margin: 16px 0;
+    margin: 24px 0;
+}
+
+footer {
+    margin: 32px 0 24px 0;
+    border-top: 1px solid #ccc;
+    font-style: italic;
 }
 
 .about {
@@ -110,12 +130,12 @@ header {
 }
 
 .markdown code { font-family: monospace; }
-.markdown h1 { font-size: 24px; }
+.markdown h1 { font-size: 26px; }
 .markdown h2 { font-size: 20px; }
 .markdown h3 { font-size: 18px; }
 
 .markdown pre code {
-    background-color: #f9f9f9;
+    background-color: #fff;
     border-radius: 3px;
     border: 1px solid #e6e6e6;
     font-size: 12px;
@@ -124,8 +144,9 @@ header {
 }
 
 .markdown p code {
-    background-color: #f2f2f2;
+    background-color: #fff;
     border-radius: 2px;
+    font-size: 13px;
     font-weight: bold;
     padding: 0 4px;
 }
@@ -136,6 +157,7 @@ header {
 .markdown li + li { margin-top: 4px; }
 
 .markdown table {
+    font-size: 13px;
     width: 100%;
 }
 
@@ -435,4 +457,4 @@ INNER JOIN &#40;
         AND latest.key = answers.key
         AND latest.changed&#95;at = answers.changed&#95;at
 WHERE answers.submission&#95;id = ?
-</code></pre><p><em>Note: We can use this query to define a view in order to simplify querying.</em></p><p>This resolves our issue of <strong>too many columns</strong> by "going down, not across". This has trade-offs, of course.</p><ul><li>The type and shape of answers are only enforced in the application layer.</li><li>Using saved answers as part of a sophisticated query is definitely more complex depending on what leverage the database offers for JSON values.</li><li>Querying immutable tables for the latest values is more expensive than querying a table whose updates are performed <em>in place</em>.</li></ul><h1>Trade-offs of the Design</h1><p>Though we believe this satisfies most of our requirements, it is not without cost. Here are some of the limiting constraints of this design.</p><ul><li>Highly tailored experiences are not really possible. Customizations exist for everyone or they exist for no one. This may be curbed with well designed escape hatches.</li><li>The forms themselves appear very "regular" and top to bottom. Since we prioritized mobile views of the form this is absolutely not an issue for us. The forms <em>look</em> data driven. More sophisticated layout definitions may help here.</li><li>This design fails one of our requirements: <strong>familiarity</strong>. It is not familiar to most developers whose only experience has been with forms that were defined by hand. The components of identity and the process of marshaling the form answers are especially unfamiliar.</li><li>Since no assumptions can be made about the structure of forms ahead of time, all interactions with the underlying form data need to implemented with caution and consideration.</li></ul><p><hr /></p><p>This has been a large project for me and I'm glad to have wrapped it up finally. In retrospect I wish I had done more research into existing solutions or services since I'm sure there's plenty of prior work done in this area. Once again, this is more about my own experiences rather than a how-to; I'm sure there's lots of simplifying ideas that I hadn't considered.</p><p>Sam Ferrell</p></div></div></body>
+</code></pre><p><em>Note: We can use this query to define a view in order to simplify querying.</em></p><p>This resolves our issue of <strong>too many columns</strong> by "going down, not across". This has trade-offs, of course.</p><ul><li>The type and shape of answers are only enforced in the application layer.</li><li>Using saved answers as part of a sophisticated query is definitely more complex depending on what leverage the database offers for JSON values.</li><li>Querying immutable tables for the latest values is more expensive than querying a table whose updates are performed <em>in place</em>.</li></ul><h1>Trade-offs of the Design</h1><p>Though we believe this satisfies most of our requirements, it is not without cost. Here are some of the limiting constraints of this design.</p><ul><li>Highly tailored experiences are not really possible. Customizations exist for everyone or they exist for no one. This may be curbed with well designed escape hatches.</li><li>The forms themselves appear very "regular" and top to bottom. Since we prioritized mobile views of the form this is absolutely not an issue for us. The forms <em>look</em> data driven. More sophisticated layout definitions may help here.</li><li>This design fails one of our requirements: <strong>familiarity</strong>. It is not familiar to most developers whose only experience has been with forms that were defined by hand. The components of identity and the process of marshaling the form answers are especially unfamiliar.</li><li>Since no assumptions can be made about the structure of forms ahead of time, all interactions with the underlying form data need to implemented with caution and consideration.</li></ul><p><hr /></p><p>This has been a large project for me and I'm glad to have wrapped it up finally. In retrospect I wish I had done more research into existing solutions or services since I'm sure there's plenty of prior work done in this area. Once again, this is more about my own experiences rather than a how-to; I'm sure there's lots of simplifying ideas that I hadn't considered.</p><p>Sam Ferrell</p></div><footer>Sam Ferrell 2021</footer></div></body>

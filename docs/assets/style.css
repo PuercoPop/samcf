@@ -22,20 +22,40 @@
     src: url("/assets/font/valkyrie_t4_bold.woff2") format('woff2');
 }
 
+body {
+    background-color: #f9f9f9;
+}
+
+a:link, a:visited { color: #333; }
+a:hover { text-decoration: underline; }
+
 .root {
     box-sizing: border-box;
     color: #333;
     font-family: valkyrie_t4, serif;
-    line-height: 1.5;
-    margin: 0 auto;
+    font-size: 17px;
+    line-height: 1.6;
+    margin: 60px 0 0 100px;
     max-width: 640px;
     padding: 0 16px;
+}
+
+header, footer {
+    font-size: 13px;
+    font-family: monospace;
+    line-height: 2;
 }
 
 header {
     display: flex;
     justify-content: space-between;
-    margin: 16px 0;
+    margin: 24px 0;
+}
+
+footer {
+    margin: 32px 0 24px 0;
+    border-top: 1px solid #ccc;
+    font-style: italic;
 }
 
 .about {
