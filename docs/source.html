@@ -126,7 +126,7 @@ header {
 .markdown em {
     font-style: italic;
 }
-</style></head><body><div class="root"><header><a href="/" title="Navigate to the home page">samcf.me</a><a href="//github.com/samcf" target="_blank" title="Check out my projects on Github">github.com/samcf</a><a href="mailto:mail@samcf.me" title="Send me an email">mailto:mail@samcf.me</a><a href="source.html" title="Navigate to this project&apos;s source code">source.html</a><address>denver, co</address></header><div class="markdown"><h2>Source Code</h2><p>The following Clojure is responsible for generating the content on this site. The content is primarily driven by the public gists on <a href="//gist.github.com/samcf" target="_blank" title="Public gists of Sam Ferrell">gist.github.com/samcf</a>. The project itself is hosted here <a href="//github.com/samcf/samcf.github.io" target="_blank" title="Navigate to the project repo">github.com/samcf/samcf.github.io</a>.</p><pre><code>(ns samcf.docs
+</style></head><body><div class="root"><header><a href="/" title="Navigate to the home page">samcf.me</a><a href="//github.com/samcf" target="_blank" title="Check out my projects on Github">github.com/samcf</a><a href="mailto:mail@samcf.me" title="Send me an email">mailto:mail@samcf.me</a><a href="source.html" title="Navigate to this project&apos;s source code">source.html</a><address>denver, co</address></header><div class="markdown"><h2>Source Code</h2><p>The following Clojure is responsible for generating the content on this site. The content is primarily driven by the public gists on <a href="//gist.github.com/samcf" target="_blank" title="Public gists of Sam Ferrell">gist.github.com/samcf</a>. The project itself is hosted here <a href="//github.com/samcf/samcf.github.io" target="_blank" title="Navigate to the project repo">github.com/samcf/samcf</a>.</p><pre><code>(ns samcf.docs
   (:require [clj-http.client :as client]
             [clojure.core.async :as async]
             [clojure.string :as string]
@@ -135,7 +135,8 @@ header {
             [markdown.core :as markdown]))
 
 (def pages
-  #{&quot;docs/index.html&quot;
+  #{&quot;README.md&quot;
+    &quot;docs/index.html&quot;
     &quot;docs/posts/%s.html&quot;
     &quot;docs/source.html&quot;})
 
@@ -206,19 +207,33 @@ header {
 
 (defmulti render (fn [filename _] filename))
 
+(defmethod render &quot;README.md&quot; [filename gists]
+  (-&gt;&gt;
+   (for [[post _] (:post gists)]
+     (format &quot;- %s [%s](//samcf.me/posts/%s.html)&quot;
+             (format-date (:created post))
+             (:desc post)
+             (:name post)))
+   (apply
+    str
+    (str
+     &quot;### Welcome!\n&quot;
+     &quot;Software engineer specializing in user interfaces, browser applications,&quot;
+     &quot; relational data modeling, and board game programming. Experience with&quot;
+     &quot; small team management, product planning, and engineering processes.&quot;
+     &quot; Interested in small teams with focused purposes for underserved domains&quot;
+     &quot; and populations. Very familiar with TypeScript, SQL, React, Elixir, and&quot;
+     &quot; Clojure.\n\n&quot;
+     &quot;### Posts\n&quot;))
+   (vector filename)
+   (vector)))
+
 (defmethod render &quot;docs/index.html&quot; [filename gists]
   [[filename
     (layout
-     [:div
-      [:div.about.markdown
-       (let [[[_ content]] (:about gists)]
-         (markdown/md-to-html-string content))]
-      [:div.posts.markdown
-       [:h1 &quot;Posts&quot;]
-       (for [[post _] (:post gists)]
-         [:div
-          (format-date (:created post)) &quot; &quot;
-          (link-to (format &quot;/posts/%s.html&quot; (:name post)) :text (:desc post))])]]
+     (let [[[_ about]] (render &quot;README.md&quot; gists)]
+       [:div.about.markdown
+        (markdown/md-to-html-string about)])
      :title &quot;Home&quot;
      :desc (str &quot;Software engineer specializing in user interfaces, browser&quot;
                 &quot; applications, relational data modeling, and board game&quot;
@@ -250,7 +265,7 @@ header {
        &quot;. The project itself is hosted here &quot;
        (link-to
         &quot;//github.com/samcf/samcf.github.io&quot;
-        :text &quot;github.com/samcf/samcf.github.io&quot;
+        :text &quot;github.com/samcf/samcf&quot;
         :title &quot;Navigate to the project repo&quot;
         :external true)
        &quot;.&quot;]
@@ -264,4 +279,6 @@ header {
         files (-&gt;&gt; pages (mapcat #(render % gists)))]
     (doseq [[filename content] files]
       (spit filename content))))
+
+(-main)
 </code></pre></div></div></body>

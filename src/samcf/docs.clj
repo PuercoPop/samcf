@@ -7,7 +7,8 @@
             [markdown.core :as markdown]))
 
 (def pages
-  #{"docs/index.html"
+  #{"README.md"
+    "docs/index.html"
     "docs/posts/%s.html"
     "docs/source.html"})
 
@@ -78,19 +79,33 @@
 
 (defmulti render (fn [filename _] filename))
 
+(defmethod render "README.md" [filename gists]
+  (->>
+   (for [[post _] (:post gists)]
+     (format "- %s [%s](//samcf.me/posts/%s.html)"
+             (format-date (:created post))
+             (:desc post)
+             (:name post)))
+   (apply
+    str
+    (str
+     "### Welcome!\n"
+     "Software engineer specializing in user interfaces, browser applications,"
+     " relational data modeling, and board game programming. Experience with"
+     " small team management, product planning, and engineering processes."
+     " Interested in small teams with focused purposes for underserved domains"
+     " and populations. Very familiar with TypeScript, SQL, React, Elixir, and"
+     " Clojure.\n\n"
+     "### Posts\n"))
+   (vector filename)
+   (vector)))
+
 (defmethod render "docs/index.html" [filename gists]
   [[filename
     (layout
-     [:div
-      [:div.about.markdown
-       (let [[[_ content]] (:about gists)]
-         (markdown/md-to-html-string content))]
-      [:div.posts.markdown
-       [:h1 "Posts"]
-       (for [[post _] (:post gists)]
-         [:div
-          (format-date (:created post)) " "
-          (link-to (format "/posts/%s.html" (:name post)) :text (:desc post))])]]
+     (let [[[_ about]] (render "README.md" gists)]
+       [:div.about.markdown
+        (markdown/md-to-html-string about)])
      :title "Home"
      :desc (str "Software engineer specializing in user interfaces, browser"
                 " applications, relational data modeling, and board game"
@@ -122,7 +137,7 @@
        ". The project itself is hosted here "
        (link-to
         "//github.com/samcf/samcf.github.io"
-        :text "github.com/samcf/samcf.github.io"
+        :text "github.com/samcf/samcf"
         :title "Navigate to the project repo"
         :external true)
        "."]
@@ -136,3 +151,5 @@
         files (->> pages (mapcat #(render % gists)))]
     (doseq [[filename content] files]
       (spit filename content))))
+
+(-main)
