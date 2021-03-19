@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<head><meta charset="utf-8" /><meta content="width=device-width" name="viewport" /><meta content="Implementing my static site generator" name="description" /><title>Implementing my static site generator &mdash; samcf.me</title><style>/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+</style><style>@font-face {
+    font-family: valkyrie_t4;
+    font-style: normal;
+    font-weight: normal;
+    font-stretch: normal;
+    src: url("/assets/font/valkyrie_t4_regular.woff2") format('woff2');
+}
+
+@font-face {
+    font-family: valkyrie_t4;
+    font-style: italic;
+    font-weight: normal;
+    font-stretch: normal;
+    src: url("/assets/font/valkyrie_t4_italic.woff2") format('woff2');
+}
+
+@font-face {
+    font-family: valkyrie_t4;
+    font-style: normal;
+    font-weight: bold;
+    font-stretch: normal;
+    src: url("/assets/font/valkyrie_t4_bold.woff2") format('woff2');
+}
+
+body {
+    background-color: #f9f9f9;
+}
+
+a:link, a:visited { color: #333; }
+a:hover { text-decoration: underline; }
+
+.root {
+    box-sizing: border-box;
+    color: #333;
+    font-family: valkyrie_t4, serif;
+    font-size: 17px;
+    line-height: 1.4;
+    margin: 60px 0 0 100px;
+    max-width: 640px;
+    padding: 0 16px;
+}
+
+header, footer {
+    font-size: 13px;
+    font-family: monospace;
+    line-height: 2;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    margin: 24px 0;
+}
+
+footer {
+    margin: 32px 0 24px 0;
+    border-top: 1px solid #ccc;
+    font-style: italic;
+}
+
+.about {
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 600px) {
+    .root {
+        margin: 0;
+        overflow-x: hidden;
+        font-size: 14px;
+    }
+
+    header,
+    header > a,
+    header > div {
+        display: block;
+    }
+}
+</style><style>.markdown ul,
+.markdown ol,
+.markdown table,
+.markdown p,
+.markdown pre {
+    margin-bottom: 1rem;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+    line-height: 1;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.markdown code { font-family: monospace; }
+.markdown h1 { font-size: 26px; }
+.markdown h2 { font-size: 20px; }
+.markdown h3 { font-size: 18px; }
+
+.markdown pre code {
+    background-color: #fff;
+    border-radius: 3px;
+    border: 1px solid #e6e6e6;
+    font-size: 12px;
+    display: block;
+    /* padding: 12px 16px; */
+}
+
+.markdown p code {
+    background-color: #fff;
+    border-radius: 2px;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 0 4px;
+}
+
+.markdown ol { list-style-type: decimal-leading-zero; }
+.markdown ul { list-style-type: disc; }
+.markdown li { margin-left: 1.6rem; }
+.markdown li + li { margin-top: 4px; }
+
+.markdown table {
+    font-size: 13px;
+    width: 100%;
+}
+
+.markdown th {
+    font-weight: bold;
+}
+
+.markdown table td,
+.markdown table th {
+    border: 1px solid #ddd;
+    padding: 4px 8px;
+}
+
+.markdown strong {
+    font-weight: bold;
+}
+
+.markdown em {
+    font-style: italic;
+}
+</style><style>/**
+ * GitHub Gist Theme
+ * Author : Anthony Attard - https://github.com/AnthonyAttard
+ * Author : Louis Barranqueiro - https://github.com/LouisBarranqueiro
+ */
+
+.hljs {
+  display: block;
+  background: white;
+  padding: 0.5em;
+  color: #333333;
+  overflow-x: auto;
+}
+
+.hljs-comment,
+.hljs-meta {
+  color: #969896;
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-strong,
+.hljs-emphasis,
+.hljs-quote {
+  color: #df5000;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-type {
+  color: #d73a49;
+}
+
+.hljs-literal,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-attribute {
+  color: #0086b3;
+}
+
+.hljs-section,
+.hljs-name {
+  color: #63a35c;
+}
+
+.hljs-tag {
+  color: #333333;
+}
+
+.hljs-title,
+.hljs-attr,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-selector-attr,
+.hljs-selector-pseudo {
+  color: #6f42c1;
+}
+
+.hljs-addition {
+  color: #55a532;
+  background-color: #eaffea;
+}
+
+.hljs-deletion {
+  color: #bd2c00;
+  background-color: #ffecec;
+}
+
+.hljs-link {
+  text-decoration: underline;
+}
+
+.hljs-number {
+  color: #005cc5;
+}
+
+.hljs-string {
+  color: #032f62;
+}
+</style><script src="/assets/highlight/highlight.pack.js" type="text/javascript"></script><script>hljs.highlightAll();</script></head><body><div class="root"><header><a href="/" title="Navigate to the home page">samcf.me</a><a href="//github.com/samcf" target="_blank" title="Check out my projects on Github">github.com/samcf</a><a href="mail@samcf.me" title="Send me an email">mail@samcf.me</a><a href="/source.html" title="Navigate to this project&apos;s source code">source.html</a><a href="/feed.xml" title="RSS feed for the blog posts">feed.xml</a></header><div class="markdown"><p>Mar 19, 2021</p><h1>Implementing a static site generator</h1><p>I've just finished wrapping up the first big version of my new personal website and I thought I'd give a quick synopsis of its design and implementation as well as ideas for some features that I want to support in the future.</p><h2>Goals and constraints</h2><p>The following are the goals and constraints that I set for myself, in order of importance, that I wanted to achieve with this project.</p><ul><li>Written in Clojure</li><li>Use GitHub Gists to host articles</li><li>Serve documents with minimal dependencies</li><li>Source code thats easy to understand</li></ul><h2>Implementation</h2><p>Let's step through and review the source code one chunk at a time to get a feeling for Clojure and how I created the site. Keep in mind that this is the general idea of the implementation when this was written; the project may have experienced major changes in the meantime.</p><p>Here's what the program does at a very high level.</p><ol><li>Download my public gists.</li><li>Render the documents to be served.</li><li>Write those documents to disk.</li><li>Commit and push the changes to GitHub.</li></ol><h3>Fetching the gists manifest</h3><p>First, let's take a look at fetching the public gists that will be used to render some of the site's documents including the list of articles, the articles themselves, and the RSS feed of those articles.</p><pre><code class="clj">&#40;defn gists &#91;username&#93;
+  &#40;-&gt; &#40;format &quot;https://api.github.com/users/%s/gists&quot; username&#41;
+      &#40;client/get {:as :json}&#41;
+      &#40;:body&#41;&#41;&#41;
+</code></pre><p>This creates a request to download the manifest of all my personal gists. The <code>-&gt;</code> symbol is known as a threading macro in Clojure; it takes the first element given and then passes it as the first argument to the following function call. Then it takes the result of that call and passes it as the first argument to the next call, and so forth until finally returning the last result. It can be written as follows:</p><pre><code class="clj">&#40;defn gists &#91;username&#93;
+  &#40;get &#40;client/get
+         &#40;format &quot;https://api.github.com/users/%s/gists&quot; username&#41;
+         {:as :json}&#41; :body&#41;&#41;
+</code></pre><p>This code is identical but tends to require the eye to move "inside out" to read it. The threading macros make the code read more "top to bottom".</p><p>Note that <code>client/get</code> is blocking and <code>{:as :json}</code> tells the library to expect the response to be a JSON document and to decode it as a Clojure data structure (such as a map).</p><h3>Transforming the response</h3><p>Now that we have the complete manifest of all my gists, it's time to transform it into something more easily usable for our purposes. Consider the following Clojure.</p><pre><code class="clj">&#40;def gist-&gt;entry
+  &#40;comp &#40;map &#40;fn &#91;data&#93; &#91;data &#40;-&gt; data :files vals first&#41;&#93;&#41;&#41;
+        &#40;filter &#40;fn &#91;&#91;data file&#93;&#93; &#40;not &#40;nil? file&#41;&#41;&#41;&#41;
+        &#40;filter &#40;fn &#91;&#91;data file&#93;&#93; &#40;string/includes? &#40;:filename file&#41; &quot;.site.&quot;&#41;&#41;&#41;
+        &#40;map &#40;fn &#91;&#91;data file&#93;&#93;
+               &#40;let &#91;&#91;name &#95; type ext&#93; &#40;string/split &#40;:filename file&#41; #&quot;\.&quot;&#41;&#93;
+                 {:name    name
+                  :type    &#40;keyword type&#41;
+                  :desc    &#40;:description data&#41;
+                  :created &#40;:created&#95;at data&#41;
+                  :updated &#40;:updated&#95;at data&#41;
+                  :url     &#40;:raw&#95;url file&#41;
+                  :ext     ext}&#41;&#41;&#41;&#41;&#41;
+</code></pre><p>This is defining a new function called <code>gist-&gt;entry</code> which takes a single gist object and turns it into a simplified map. This value allows us to gloss over some of the minutae of gists; most importantly that gists may contain multiple files. For our purposes, we only care about the first file in each gist.</p><p>This function lives in a class of Clojure functions called <strong>transducers</strong> which is a fancy word for describing a transformation of a value without caring too much about where the value is coming from.</p><p>Let's go over what this transformation is doing with each step.</p><ol><li>Transforms the gist map into a tuple of the gist itself and the first file.</li><li>Removes gists that don't have at least one file.</li><li>Removes gists where the filename doesn't include the substring <code>&quot;.site.&quot;</code></li><li>Transforms the tuple of <code>&#91;gist, file&#93;</code> into a simplified map.</li></ol><p>The shape of this final map is what the rest of the program will rely on.</p><h3>Fetching article contents</h3><p>The gists manifest only includes metadata about the gists, not including the content of those gists. Since we'll need to actually render the contents, we need to fetch that as well.</p><p>Here's a function that accepts one or more entry maps and returns a map whose keys are the <strong>type</strong> of the gist and whose values are a set of tuples which contains the entry and the text content of that entry.</p><pre><code class="clj">&#40;defn fetch &#91;&amp; entries&#93;
+  &#40;-&gt;&gt; entries
+       &#40;mapv &#40;fn &#91;post&#93; &#40;future &#91;post &#40;-&gt; post :url client/get :body&#41;&#93;&#41;&#41;&#41;
+       &#40;mapv deref&#41;
+       &#40;reduce
+        &#40;fn &#91;m v&#93;
+          &#40;let &#91;&#91;p c&#93; v&#93;
+            &#40;update m &#40;:type p&#41; conj v&#41;&#41;&#41; {}&#41;&#41;&#41;
+</code></pre><p>Although Clojure has a very sophisticated concurrency library called <code>core.async</code>, its use for this program would be overkill. Clojure has another mechanism for performing work in another thread: futures. These are objects that, when dereferenced with <code>@f</code> or <code>&#40;deref f&#41;</code> will block the calling thread until its result is realized. A similar mechanism in other languages is the <code>Promise</code>.</p><p>First we'll generate a collection of futures by iterating over the provided entries and creating HTTP requests to fetch the content for each one. This should result in performing each HTTP request concurrently; the work is split up within a thread pool that will "just work" to the best of Clojure's ability.</p><p>Since our use case relies on <strong>all</strong> gist content being loaded before rendering, we'll simply <code>deref</code> each future all at once. This will block the main thread until every HTTP response is received.</p><p>Finally, we'll turn the collection of gist contents into a single map whose keys are the <em>type</em> of gist and whose values is the set of all gists with that type.</p><pre><code class="clj">{:post &#91;&#91;{:name &quot;my-sample-gist&quot; :type :post}
+         &quot;The quick brown fox...&quot;&#93;&#93;
+ :code &#91;&#91;{:name &quot;binary-search-tree.clj&quot;, :type :code}
+         &quot;&#40;defrecord Node &#91;...&#93;&#41;&quot;&#93;&#93;}
+</code></pre><p>This value will be accessible when rendering the static documents.</p><h3>Rendering static documents</h3><p>Now that we've downloaded the gists and the contents for each gist, we'll put all that into action by rendering the documents that will be served for the site.</p><p>Here's the basic idea: given a filename like <code>&quot;index.html&quot;</code>, return the string that should be written to that document. Since we'll be creating multiple documents, we can represent this using a mechanism for <strong>polymorphism</strong> that is available in Clojure: <strong>multimethods</strong>.</p><p><strong>Multimethods are functions that use one of many implementations</strong> depending on something found in the arguments. Here's an example of one in action.</p><pre><code class="clj">;; We create a new multimethod and pass it a dispatch function to derive the
+;; value that will be used to figure out which implementation to use.
+&#40;defmulti render &#40;fn &#91;filename &#95;&#93; filename&#41;&#41;
+
+;; This creates a multimethod which dispatches on the given filename; let's
+;; implement a method that specifies an implementation for the filename
+;; &quot;index.html&quot;.
+&#40;defmethod render &quot;index.html&quot; &#91;filename gists&#93;
+  &#40;println &quot;Hello, world!&quot;&#41;&#41;
+
+;; `render` can then be called like any other function.
+&#40;render &#91;&quot;index.html&quot; ...&#93;&#41;
+</code></pre><p>Switching on the filename ended up being a great choice; I was easily able to add additional filenames to extend the <code>render</code> implementation without having to change how the function was being called or what was being done with the return value.</p><p>Here's the real implementation of a method for <code>feed.xml</code>, an XML document that provides an RSS feed for all the articles I've written.</p><pre><code class="clj">&#40;defmethod render &quot;docs/feed.xml&quot; &#91;filename gists&#93;
+  &#40;-&gt;&gt; &#91;:rss {:version &quot;2.0&quot;}
+        &#91;:channel
+         &#91;:title &quot;Sam Ferrell's Thoughts&quot;&#93;
+         &#91;:description &quot;Writing and thoughts&quot;&#93;
+         &#91;:link &quot;https://samcf.me&quot;&#93;
+         &#91;:copyright &quot;Sam Ferrell 2021&quot;&#93;
+         &#91;:language &quot;en-us&quot;&#93;
+         &#40;for &#91;post &#40;:post gists&#41; :let &#91;&#91;post content&#93; post&#93;&#93;
+           &#91;:item
+            &#91;:link &#40;format &quot;https://samcf.me/posts/%s.html&quot; &#40;:name post&#41;&#41;&#93;
+            &#91;:title &#40;:desc post&#41;&#93;
+            &#91;:desc &#40;:desc post&#41;&#93;
+            &#91;:pubDate &#40;format-date &#40;:created post&#41; &quot;E, d MMM y k:m:s Z&quot;&#41;&#93;&#93;&#41;&#93;&#93;
+       &#40;xml/sexp-as-element&#41;
+       &#40;xml/emit-str&#41;
+       &#40;vector filename&#41;
+       &#40;vector&#41;&#41;&#41;
+</code></pre><p>The first argument to <code>render</code> is the desired filename; this will be used as the dispatch value for the multimethod but the filename returned will be used when creating or updating the static documents. The second argument is that map of gists we defined above.</p><p>This uses a Clojure standard library called <code>clojure.data.xml</code> to generate XML strings from Clojure data structures. Each vector of <code>&#91;:tagname attrs children&#93;</code> represents an XML element which can be nested.</p><p>Finally, we turn the data structure into a string, wrap that with a vector to pair it with a filename and then finally wrap <strong>that</strong> with another vector since thats the expected shape of the return value for <code>render</code> in order to support the creation of multiple documents per call.</p><p>The return value is expected to a vector of vectors, for example:</p><pre><code class="clj">&#91;&#91;&quot;index.html&quot;, &quot;Hello, my name is Sam Ferrell&quot;&#93;
+ &#91;&quot;docs/feed.xml&quot;, &quot;The quick brown fox...&quot;&#93;&#93;
+</code></pre><h3>Wrapping it all up</h3><p>We've downloaded the gists and the contents of each gist and  then created a render function to map filenames to descriptions of static documents. Let's put both pieces together and finally emit the files that will be committed to the repo and then served over the web.</p><pre><code class="clj">&#40;defn -main &#91;&#93;
+  &#40;let &#91;gists &#40;-&gt;&gt; &#40;gists &quot;samcf&quot;&#41; &#40;into &#91;&#93; gist-&gt;entry&#41; &#40;apply fetch&#41;&#41;
+        files &#40;-&gt;&gt; pages &#40;mapcat #&#40;render % gists&#41;&#41;&#41;&#93;
+    &#40;doseq &#91;&#91;filename content&#93; files&#93;
+      &#40;spit filename content&#41;&#41;&#41;&#41;
+</code></pre><p>Our <code>main</code> function creates two bindings: <code>gists</code> contains the map of gist types to the gists and <code>files</code> is a collection of static file descriptions that we'll iterate over to write new files. <code>&#40;spit filename content&#41;</code> is a Clojure function which writes the contents to the file given by <code>filename</code>.</p><p>That all takes a few moments to run; most of that time is spent fetching the gists via the GitHub API. Once completed, new static documents are created within the repo to be committed and deployed to GitHub.</p><h3>Serving the site</h3><p>Since most of our content is text we can easily use GitHub Pages to host our content. We simply commit the static documents to the repository itself under the <code>docs</code> directory. <code>index.html</code> will be used as the root document for the site and all other documents are found relative to <code>docs</code>. Here's the layout of the repo today.</p><pre><code>/
+/README.md
+/docs
+/docs/index.html
+/docs/feed.xml
+/docs/posts/%s.html
+/src
+/src/samcf/docs.clj
+</code></pre><p>Since the repository is called <code>samcf</code>, the site can be found under <code>samcf.github.io/samcf</code>; however I have a custom domain name called <code>samcf.me</code> which serves the site instead.</p><h3>Code highlighting</h3><p>Although this breaks the design constraint of no dependencies, I think code highlighting is cool enough to warrant it. I use a JavaScript library called <a href='https://highlightjs.org/'>HighlightJS</a> to perform client-side highlighting of all the code found in my articles such as the one you're reading now. It's pretty light weight and fast so my heart isn't too broken.</p><h2>Future changes and features</h2><p>Although limiting myself to just supporting gist content is great to motivate me to write more, I'd also like to dynamically serve photos of my hikes and climbing. I'm not sure where I'd host those photos and whether or not I think its worth it to procedurally crop and resize them.</p><p>I'd also like to support showcasing my latest code snippets that I save as gists but not certain whether the minimal design of the site could accomodate them.</p><p>Also, it's a pain to rerun this program whenever I write a new article or make edits to an existing one; maybe I can use GitHub Actions to periodically update the contents of the site? I think that might involve some infrastructure shenanigans so that GitHub can run my code on their machines.</p><h2>In conclusion</h2><p>We've gone over the design and implementation of my personal site as well as some of the features I'd like to eventually support. I'm satisfied with this project and how terse the implementation turned out to be.</p><p>Thanks for reading!</p></div><footer>Sam Ferrell 2021</footer></div></body>
