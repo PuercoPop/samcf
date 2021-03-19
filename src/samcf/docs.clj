@@ -91,8 +91,8 @@
 
 (defmethod render "README.md" [filename gists]
   (->>
-   (for [[post _] (:post gists)]
-     (format "- %s [%s](//samcf.me/posts/%s.html)"
+   (for [[post _] (reverse (:post gists))]
+     (format "- %s [%s](//samcf.me/posts/%s.html)\n"
              (format-date (:created post))
              (:desc post)
              (:name post)))

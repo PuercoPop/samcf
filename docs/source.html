@@ -365,8 +365,8 @@ footer {
 
 (defmethod render &quot;README.md&quot; [filename gists]
   (-&gt;&gt;
-   (for [[post _] (:post gists)]
-     (format &quot;- %s [%s](//samcf.me/posts/%s.html)&quot;
+   (for [[post _] (reverse (:post gists))]
+     (format &quot;- %s [%s](//samcf.me/posts/%s.html)\n&quot;
              (format-date (:created post))
              (:desc post)
              (:name post)))
