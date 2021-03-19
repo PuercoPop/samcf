@@ -272,8 +272,9 @@ footer {
 .hljs-string {
   color: #032f62;
 }
-</style><script src="/assets/highlight/highlight.pack.js" type="text/javascript"></script><script>hljs.highlightAll();</script></head><body><div class="root"><header><a href="/" title="Navigate to the home page">samcf.me</a><a href="//github.com/samcf" target="_blank" title="Check out my projects on Github">github.com/samcf</a><a href="mailto:mail@samcf.me" title="Send me an email">mailto:mail@samcf.me</a><a href="/source.html" title="Navigate to this project&apos;s source code">source.html</a><address>denver, co</address></header><div class="markdown"><h2>Source Code</h2>The following Clojure is responsible for generating the content on this site. The content is primarily driven by the public gists on <a href="//gist.github.com/samcf" target="_blank" title="Public gists of Sam Ferrell">gist.github.com/samcf</a>. The project itself is hosted here <a href="//github.com/samcf/samcf.github.io" target="_blank" title="Navigate to the project repo">github.com/samcf/samcf</a>.<br /><br /><pre><code>(ns samcf.docs
-  (:require [clj-http.client :as client]
+</style><script src="/assets/highlight/highlight.pack.js" type="text/javascript"></script><script>hljs.highlightAll();</script></head><body><div class="root"><header><a href="/" title="Navigate to the home page">samcf.me</a><a href="//github.com/samcf" target="_blank" title="Check out my projects on Github">github.com/samcf</a><a href="mail@samcf.me" title="Send me an email">mail@samcf.me</a><a href="/source.html" title="Navigate to this project&apos;s source code">source.html</a><a href="/feed.xml" title="RSS feed for the blog posts">feed.xml</a></header><div class="markdown"><h2>Source Code</h2>The following Clojure is responsible for generating the content on this site. The content is primarily driven by the public gists on <a href="//gist.github.com/samcf" target="_blank" title="Public gists of Sam Ferrell">gist.github.com/samcf</a>. The project itself is hosted here <a href="//github.com/samcf/samcf.github.io" target="_blank" title="Navigate to the project repo">github.com/samcf/samcf</a>.<br /><br /><pre><code>(ns samcf.docs
+  (:require [clojure.data.xml :as xml]
+            [clj-http.client :as client]
             [clojure.string :as string]
             [hiccup.core :as hiccup]
             [hiccup.page :as page]
@@ -283,7 +284,8 @@ footer {
   #{&quot;README.md&quot;
     &quot;docs/index.html&quot;
     &quot;docs/posts/%s.html&quot;
-    &quot;docs/source.html&quot;})
+    &quot;docs/source.html&quot;
+    &quot;docs/feed.xml&quot;})
 
 (defn gists [username]
   (-&gt; (format &quot;https://api.github.com/users/%s/gists&quot; username)
@@ -319,10 +321,11 @@ footer {
        :target (when external &quot;_blank&quot;)}
    (or text url)])
 
-(defn format-date [s]
-  (-&gt;&gt; (java.time.Instant/parse s)
-       (java.util.Date/from)
-       (.format (java.text.SimpleDateFormat. &quot;MMM d, yyyy&quot;))))
+(defn format-date
+  ([s] (format-date s &quot;MMM d, yyyy&quot;))
+  ([s format] (-&gt;&gt; (java.time.Instant/parse s)
+                   (java.util.Date/from)
+                   (.format (java.text.SimpleDateFormat. format)))))
 
 (defn layout [content &amp; {:keys [title desc]}]
   (hiccup/html
@@ -346,12 +349,15 @@ footer {
        :text &quot;github.com/samcf&quot;
        :title &quot;Check out my projects on Github&quot;
        :external true)
-      (link-to &quot;mailto:mail@samcf.me&quot; :title &quot;Send me an email&quot;)
+      (link-to &quot;mail@samcf.me&quot; :title &quot;Send me an email&quot;)
       (link-to
        &quot;/source.html&quot;
        :text &quot;source.html&quot;
        :title &quot;Navigate to this project&apos;s source code&quot;)
-      [:address &quot;denver, co&quot;]]
+      (link-to
+       &quot;/feed.xml&quot;
+       :text &quot;feed.xml&quot;
+       :title &quot;RSS feed for the blog posts&quot;)]
      content
      [:footer &quot;Sam Ferrell 2021&quot;]]]))
 
@@ -425,6 +431,25 @@ footer {
      :title &quot;Source code&quot;
      :desc (str &quot;The Clojure implementation of my static site generator which&quot;
                 &quot; created this page.&quot;))]])
+
+(defmethod render &quot;docs/feed.xml&quot; [filename gists]
+  (-&gt;&gt; [:rss {:version &quot;2.0&quot;}
+        [:channel
+         [:title &quot;Sam Ferrell&apos;s Thoughts&quot;]
+         [:description &quot;Writing and thoughts&quot;]
+         [:link &quot;https://samcf.me&quot;]
+         [:copyright &quot;Sam Ferrell 2021&quot;]
+         [:language &quot;en-us&quot;]
+         (for [post (:post gists) :let [[post content] post]]
+           [:item
+            [:link (format &quot;https://samcf.me/posts/%s.html&quot; (:name post))]
+            [:title (:desc post)]
+            [:desc (:desc post)]
+            [:pubDate (format-date (:created post) &quot;E, d MMM y k:m:s Z&quot;)]])]]
+       (xml/sexp-as-element)
+       (xml/emit-str)
+       (vector filename)
+       (vector)))
 
 (defn -main []
   (let [gists (-&gt;&gt; (gists &quot;samcf&quot;) (into [] gist-&gt;entry) (apply fetch))

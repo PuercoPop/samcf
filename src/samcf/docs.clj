@@ -1,5 +1,6 @@
 (ns samcf.docs
-  (:require [clj-http.client :as client]
+  (:require [clojure.data.xml :as xml]
+            [clj-http.client :as client]
             [clojure.string :as string]
             [hiccup.core :as hiccup]
             [hiccup.page :as page]
@@ -9,7 +10,8 @@
   #{"README.md"
     "docs/index.html"
     "docs/posts/%s.html"
-    "docs/source.html"})
+    "docs/source.html"
+    "docs/feed.xml"})
 
 (defn gists [username]
   (-> (format "https://api.github.com/users/%s/gists" username)
@@ -45,10 +47,11 @@
        :target (when external "_blank")}
    (or text url)])
 
-(defn format-date [s]
-  (->> (java.time.Instant/parse s)
-       (java.util.Date/from)
-       (.format (java.text.SimpleDateFormat. "MMM d, yyyy"))))
+(defn format-date
+  ([s] (format-date s "MMM d, yyyy"))
+  ([s format] (->> (java.time.Instant/parse s)
+                   (java.util.Date/from)
+                   (.format (java.text.SimpleDateFormat. format)))))
 
 (defn layout [content & {:keys [title desc]}]
   (hiccup/html
@@ -72,12 +75,15 @@
        :text "github.com/samcf"
        :title "Check out my projects on Github"
        :external true)
-      (link-to "mailto:mail@samcf.me" :title "Send me an email")
+      (link-to "mail@samcf.me" :title "Send me an email")
       (link-to
        "/source.html"
        :text "source.html"
        :title "Navigate to this project's source code")
-      [:address "denver, co"]]
+      (link-to
+       "/feed.xml"
+       :text "feed.xml"
+       :title "RSS feed for the blog posts")]
      content
      [:footer "Sam Ferrell 2021"]]]))
 
@@ -151,6 +157,25 @@
      :title "Source code"
      :desc (str "The Clojure implementation of my static site generator which"
                 " created this page."))]])
+
+(defmethod render "docs/feed.xml" [filename gists]
+  (->> [:rss {:version "2.0"}
+        [:channel
+         [:title "Sam Ferrell's Thoughts"]
+         [:description "Writing and thoughts"]
+         [:link "https://samcf.me"]
+         [:copyright "Sam Ferrell 2021"]
+         [:language "en-us"]
+         (for [post (:post gists) :let [[post content] post]]
+           [:item
+            [:link (format "https://samcf.me/posts/%s.html" (:name post))]
+            [:title (:desc post)]
+            [:desc (:desc post)]
+            [:pubDate (format-date (:created post) "E, d MMM y k:m:s Z")]])]]
+       (xml/sexp-as-element)
+       (xml/emit-str)
+       (vector filename)
+       (vector)))
 
 (defn -main []
   (let [gists (->> (gists "samcf") (into [] gist->entry) (apply fetch))
